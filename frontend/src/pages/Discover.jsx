@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
 import SportFilter from '../components/SportFilter'
 import PlayerCard from '../components/PlayerCard'
@@ -18,18 +18,21 @@ export default function Discover() {
   const { user } = useAuth()
   const [sport, setSport] = useState('')
   const [players, setPlayers] = useState(mockPlayers)
-  const [passed, setPassed] = useState(new Set())
 
   // { [playerId]: { id, status, direction } }  — match relationship states
   const [matchStatuses, setMatchStatuses] = useState({})
   // { [playerId]: 'none'|'pending_sent'|'pending_received'|'accepted' } — friend states
   const [friendStatuses, setFriendStatuses] = useState({})
 
-  // Fetch both status maps once on mount
-  useEffect(() => {
+  const refreshMatchStatuses = useCallback(() => {
     getRelationshipStatuses().then(setMatchStatuses).catch(() => {})
-    getFriendStatuses().then(setFriendStatuses).catch(() => {})
   }, [])
+
+  // Fetch status maps on mount (PlayerCard syncs when this data arrives after first paint)
+  useEffect(() => {
+    refreshMatchStatuses()
+    getFriendStatuses().then(setFriendStatuses).catch(() => {})
+  }, [refreshMatchStatuses])
 
   useEffect(() => {
     getNearbyPlayers(sport)
@@ -37,7 +40,17 @@ export default function Discover() {
       .catch(() => setPlayers(mockPlayers))
   }, [sport])
 
-  const visible = players.filter(p => !passed.has(p.id) && (!sport || p.sport === sport))
+  const statusForPlayer = (playerId) => {
+    if (playerId == null) return null
+    const m = matchStatuses[playerId] ?? matchStatuses[String(playerId)]
+    return m ?? null
+  }
+
+  const visible = players.filter(
+    p =>
+      (!sport || p.sport === sport) &&
+      (user?.id == null || Number(p.id) !== Number(user.id))
+  )
 
   return (
     <div>
@@ -49,24 +62,30 @@ export default function Discover() {
         </div>
       ) : (
         <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
-          {visible.map((player) => (
-            <PlayerCard
-              key={player.id}
-              player={player}
-              currentUserId={user?.id}
-              matchRel={matchStatuses[player.id]
-                ? {
-                    id:        matchStatuses[player.id].id,
-                    status:    matchStatuses[player.id].status,
-                    from_user: matchStatuses[player.id].direction === 'sent' ? user?.id : player.id,
-                    to_user:   matchStatuses[player.id].direction === 'sent' ? player.id : user?.id,
-                  }
-                : null
-              }
-              initialFriendStatus={friendStatuses[player.id] || 'none'}
-              onPass={() => setPassed(prev => new Set([...prev, player.id]))}
-            />
-          ))}
+          {visible.map((player) => {
+            const st = statusForPlayer(player.id)
+            const friendSt =
+              friendStatuses[player.id] ?? friendStatuses[String(player.id)] ?? 'none'
+            return (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                currentUserId={user?.id}
+                matchRel={
+                  st
+                    ? {
+                        id: st.id,
+                        status: st.status,
+                        from_user: st.direction === 'sent' ? user?.id : player.id,
+                        to_user: st.direction === 'sent' ? player.id : user?.id,
+                      }
+                    : null
+                }
+                initialFriendStatus={friendSt}
+                onMatchStatusesInvalidate={refreshMatchStatuses}
+              />
+            )
+          })}
         </div>
       )}
     </div>

@@ -65,6 +65,9 @@ router.post('/', auth, async (req, res) => {
     if (!post[0]) return res.status(404).json({ error: 'Post not found' })
 
     const toUser = post[0].user_id
+    if (Number(req.user.id) === Number(toUser)) {
+      return res.status(400).json({ error: 'You cannot send a request on your own session' })
+    }
     const { rows: existing } = await query(
       `SELECT id FROM requests WHERE from_user = $1 AND to_user = $2 AND post_id = $3`,
       [req.user.id, toUser, postId]
@@ -78,6 +81,9 @@ router.post('/', auth, async (req, res) => {
     return res.status(201).json({ success: true })
 
   } catch (err) {
+    if (err.message === 'SELF_REQUEST') {
+      return res.status(400).json({ error: 'You cannot send a request to yourself' })
+    }
     if (err.message === 'ALREADY_EXISTS') {
       return res.status(409).json({ error: 'A request or match already exists with this player' })
     }

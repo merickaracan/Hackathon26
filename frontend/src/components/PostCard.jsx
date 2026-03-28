@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { useToast } from '../context/ToastContext'
 import { sendRequest } from '../api/requests'
 
-export default function PostCard({ post, initialRequestSent = false }) {
+export default function PostCard({ post, initialRequestSent = false, isOwnPost = false }) {
   const { showToast } = useToast()
   const [requestSent, setRequestSent] = useState(initialRequestSent)
   const [loading, setLoading] = useState(false)
 
   const handleRequest = async () => {
+    if (isOwnPost) return
     setLoading(true)
     try {
       await sendRequest({ postId: post.id })
@@ -53,17 +54,21 @@ export default function PostCard({ post, initialRequestSent = false }) {
 
       <div className="flex items-center justify-between pt-1">
         <span className="text-[11px] text-text-muted font-body">{post.format}</span>
-        <button
-          onClick={handleRequest}
-          disabled={requestSent || loading}
-          className={`px-5 py-1.5 rounded-full border text-xs font-medium transition-colors font-body tracking-wide ${
-            requestSent
-              ? 'border-border text-text-muted cursor-default'
-              : 'border-brand text-brand hover:bg-brand-tint disabled:opacity-50'
-          }`}
-        >
-          {requestSent ? '✓ Request sent' : loading ? '…' : 'Send request'}
-        </button>
+        {isOwnPost ? (
+          <span className="text-[11px] text-text-muted font-body">Your session</span>
+        ) : (
+          <button
+            onClick={handleRequest}
+            disabled={requestSent || loading}
+            className={`px-5 py-1.5 rounded-full border text-xs font-medium transition-colors font-body tracking-wide ${
+              requestSent
+                ? 'border-border text-text-muted cursor-default'
+                : 'border-brand text-brand hover:bg-brand-tint disabled:opacity-50'
+            }`}
+          >
+            {requestSent ? '✓ Request sent' : loading ? '…' : 'Send request'}
+          </button>
+        )}
       </div>
     </div>
   )

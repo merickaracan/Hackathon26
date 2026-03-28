@@ -35,6 +35,9 @@ async function hasActiveRelationship(userAId, userBId) {
 
 // Send a direct match request. Throws 'ALREADY_EXISTS' if one already exists.
 async function sendMatchRequest(senderId, recipientId) {
+  if (Number(senderId) === Number(recipientId)) {
+    throw new Error('SELF_REQUEST')
+  }
   const exists = await hasActiveRelationship(senderId, recipientId)
   if (exists) throw new Error('ALREADY_EXISTS')
 

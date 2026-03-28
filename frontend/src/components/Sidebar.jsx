@@ -5,7 +5,6 @@ const navItems = [
   { to: '/discover',     label: 'Discover' },
   { to: '/posts',        label: 'Sessions' },
   { to: '/matches',      label: 'Connections', badge: true },
-  { to: '/friends',      label: 'Friends' },
   { to: '/post-session', label: 'Create session', highlight: true },
   { to: '/profile',      label: 'Profile' },
 ]

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useToast } from '../context/ToastContext'
 import { sendRequest, acceptRequest, declineRequest, unmatch } from '../api/requests'
 import { sendFriendRequest } from '../api/friends'
@@ -27,19 +27,32 @@ function toMatchStatus(rel, currentUserId) {
   return 'none'
 }
 
-export default function PlayerCard({ player, onPass, matchRel = null, currentUserId = null, initialFriendStatus = 'none' }) {
+export default function PlayerCard({
+  player,
+  matchRel = null,
+  currentUserId = null,
+  initialFriendStatus = 'none',
+  onMatchStatusesInvalidate,
+}) {
   const { showToast } = useToast()
+  const isSelf =
+    currentUserId != null && player?.id != null && Number(player.id) === Number(currentUserId)
 
-  // Match/play relationship state
-  const [rel, setRel] = useState(matchRel)         // raw relationship object { id, status, from_user, to_user }
+  // Match/play relationship state — keep in sync when parent loads / refetches statuses (async map)
+  const [rel, setRel] = useState(matchRel)
+  useEffect(() => {
+    setRel(matchRel ?? null)
+  }, [matchRel?.id, matchRel?.status, matchRel?.from_user, matchRel?.to_user])
+
   const matchStatus = toMatchStatus(rel, currentUserId)
 
-  // Friend relationship state
-  const [friendStatus, setFriendStatus] = useState(
-    initialFriendStatus === 'accepted'         ? 'friends' :
-    initialFriendStatus === 'pending_sent'     ? 'sent' :
-    initialFriendStatus === 'pending_received' ? 'sent' : 'none'
-  )
+  const mapFriendProp = (v) =>
+    v === 'accepted' ? 'friends' : v === 'pending_sent' || v === 'pending_received' ? 'sent' : 'none'
+
+  const [friendStatus, setFriendStatus] = useState(() => mapFriendProp(initialFriendStatus))
+  useEffect(() => {
+    setFriendStatus(mapFriendProp(initialFriendStatus))
+  }, [initialFriendStatus])
 
   const [loading, setLoading] = useState(false)
   const meta = sportMeta[player.sport] || sportMeta.tennis
@@ -47,7 +60,7 @@ export default function PlayerCard({ player, onPass, matchRel = null, currentUse
   // ── Match request actions ──────────────────────────────────────────────────
 
   const handleSendRequest = async () => {
-    if (Number(player.id) === Number(currentUserId)) return // guard: no self-requests
+    if (isSelf) return
     setLoading(true)
     try {
       const data = await sendRequest({ playerId: player.id })
@@ -59,10 +72,12 @@ export default function PlayerCard({ player, onPass, matchRel = null, currentUse
         localStorage.setItem('sinder_pending_sent', JSON.stringify(stored))
       } catch {}
       showToast(`✅ Match request sent to ${player.name}!`)
+      onMatchStatusesInvalidate?.()
     } catch (err) {
       const msg = err?.response?.data?.error
       if (msg?.includes('already exists')) {
         setRel({ id: null, status: 'pending', from_user: currentUserId, to_user: player.id })
+        onMatchStatusesInvalidate?.()
       } else {
         showToast(msg || 'Failed to send request.')
       }
@@ -78,6 +93,7 @@ export default function PlayerCard({ player, onPass, matchRel = null, currentUse
       await acceptRequest(rel.id)
       setRel(prev => ({ ...prev, status: 'accepted' }))
       showToast(`Matched with ${player.name}!`)
+      onMatchStatusesInvalidate?.()
     } catch (err) {
       showToast(err?.response?.data?.error || 'Failed to accept.')
     } finally {
@@ -92,6 +108,7 @@ export default function PlayerCard({ player, onPass, matchRel = null, currentUse
       await declineRequest(rel.id)
       setRel(null)
       showToast('Request declined.')
+      onMatchStatusesInvalidate?.()
     } catch (err) {
       showToast(err?.response?.data?.error || 'Failed to decline.')
     } finally {
@@ -105,6 +122,7 @@ export default function PlayerCard({ player, onPass, matchRel = null, currentUse
       await unmatch(player.id)
       setRel(null)
       showToast(`Unmatched from ${player.name}.`)
+      onMatchStatusesInvalidate?.()
     } catch (err) {
       showToast(err?.response?.data?.error || 'Failed to unmatch.')
     } finally {
@@ -115,6 +133,7 @@ export default function PlayerCard({ player, onPass, matchRel = null, currentUse
   // ── Friend request action ──────────────────────────────────────────────────
 
   const handleAddFriend = async () => {
+    if (isSelf) return
     try {
       await sendFriendRequest(player.id)
       setFriendStatus('sent')
@@ -127,33 +146,86 @@ export default function PlayerCard({ player, onPass, matchRel = null, currentUse
     }
   }
 
-  // ── Render match-request button based on current state ────────────────────
+  // ── Match status + actions ────────────────────────────────────────────────
 
-  const renderMatchButton = () => {
+  const renderMatchStatusBanner = () => {
+    if (isSelf) return null
     if (matchStatus === 'accepted') {
       return (
-        <button
-          onClick={handleUnmatch}
-          disabled={loading}
-          className="flex-1 py-2 rounded-full border border-red-300 text-red-400 text-xs font-medium hover:bg-red-50 transition-colors font-body tracking-wide disabled:opacity-50"
-        >
-          {loading ? '…' : 'Unmatch'}
-        </button>
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200/80 px-3 py-2.5">
+          <p className="text-xs font-semibold text-emerald-800 font-body">Matched</p>
+          <p className="text-[11px] text-emerald-700/90 font-body mt-0.5">
+            You&apos;re connected — use Message (when available) or open Connections for the full list.
+          </p>
+        </div>
+      )
+    }
+    if (matchStatus === 'pending_sent') {
+      return (
+        <div className="rounded-xl bg-brand-bg border border-border px-3 py-2.5">
+          <p className="text-xs font-semibold text-text-main font-body">Request sent</p>
+          <p className="text-[11px] text-text-muted font-body mt-0.5">Waiting for them to accept or decline.</p>
+        </div>
+      )
+    }
+    if (matchStatus === 'pending_received') {
+      return (
+        <div className="rounded-xl bg-amber-50 border border-amber-200/80 px-3 py-2.5">
+          <p className="text-xs font-semibold text-amber-900 font-body">Match request</p>
+          <p className="text-[11px] text-amber-800/90 font-body mt-0.5">They want to connect — accept to match or decline.</p>
+        </div>
+      )
+    }
+    return (
+      <div className="rounded-xl bg-brand-bg/60 border border-border px-3 py-2">
+        <p className="text-[11px] text-text-muted font-body">No match yet — send a request if you&apos;d like to play together.</p>
+      </div>
+    )
+  }
+
+  const renderMatchActions = () => {
+    if (isSelf) {
+      return (
+        <p className="text-center text-xs text-text-muted font-body py-2">
+          You can&apos;t send requests to yourself — browse other players.
+        </p>
+      )
+    }
+    if (matchStatus === 'accepted') {
+      return (
+        <div className="flex gap-2 w-full">
+          <button
+            type="button"
+            onClick={() => showToast('Messaging coming soon.')}
+            className="flex-1 py-2 rounded-full bg-brand text-white text-xs font-medium hover:bg-brand/90 transition-colors font-body tracking-wide"
+          >
+            Message
+          </button>
+          <button
+            type="button"
+            onClick={handleUnmatch}
+            disabled={loading}
+            className="flex-1 py-2 rounded-full border border-border text-text-muted text-xs font-medium hover:border-red-300 hover:text-red-400 transition-colors font-body tracking-wide disabled:opacity-50"
+          >
+            {loading ? '…' : 'Unmatch'}
+          </button>
+        </div>
       )
     }
 
     if (matchStatus === 'pending_sent') {
       return (
-        <button disabled className="flex-1 py-2 rounded-full bg-border text-text-muted text-xs font-medium cursor-default font-body tracking-wide">
-          ✓ Request sent
+        <button type="button" disabled className="w-full py-2 rounded-full bg-border text-text-muted text-xs font-medium cursor-default font-body tracking-wide">
+          ✓ Request sent — awaiting reply
         </button>
       )
     }
 
     if (matchStatus === 'pending_received') {
       return (
-        <>
+        <div className="flex gap-2 w-full">
           <button
+            type="button"
             onClick={handleDecline}
             disabled={loading}
             className="flex-1 py-2 rounded-full border border-border text-text-muted text-xs font-medium hover:border-red-300 hover:text-red-400 transition-colors font-body disabled:opacity-50"
@@ -161,33 +233,26 @@ export default function PlayerCard({ player, onPass, matchRel = null, currentUse
             {loading ? '…' : 'Decline'}
           </button>
           <button
+            type="button"
             onClick={handleAccept}
             disabled={loading}
             className="flex-1 py-2 rounded-full bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-600 transition-colors font-body disabled:opacity-50"
           >
             {loading ? '…' : 'Accept'}
           </button>
-        </>
+        </div>
       )
     }
 
-    // status === 'none'
     return (
-      <>
-        <button
-          onClick={onPass}
-          className="flex-1 py-2 rounded-full border border-border text-text-muted text-xs font-medium hover:border-brand hover:text-brand transition-colors font-body tracking-wide"
-        >
-          Pass
-        </button>
-        <button
-          onClick={handleSendRequest}
-          disabled={loading}
-          className="flex-1 py-2 rounded-full bg-brand text-white text-xs font-medium hover:bg-brand/90 transition-colors font-body tracking-wide disabled:opacity-50"
-        >
-          {loading ? '…' : 'Request match'}
-        </button>
-      </>
+      <button
+        type="button"
+        onClick={handleSendRequest}
+        disabled={loading}
+        className="w-full py-2 rounded-full bg-brand text-white text-xs font-medium hover:bg-brand/90 transition-colors font-body tracking-wide disabled:opacity-50"
+      >
+        {loading ? '…' : 'Request match'}
+      </button>
     )
   }
 
@@ -227,23 +292,23 @@ export default function PlayerCard({ player, onPass, matchRel = null, currentUse
           ))}
         </div>
 
-        {/* Actions */}
+        {/* Match status + actions */}
         <div className="flex flex-col gap-2 mt-auto pt-1">
-          <div className="flex gap-2">
-            {renderMatchButton()}
-          </div>
-          {/* Friend button — separate from match relationship */}
-          <button
-            onClick={handleAddFriend}
-            disabled={friendStatus !== 'none'}
-            className={`w-full py-2 rounded-full border text-xs font-medium transition-colors font-body tracking-wide ${
-              friendStatus === 'sent'    ? 'border-border text-text-muted cursor-default' :
-              friendStatus === 'friends' ? 'border-green-300 text-green-600 cursor-default' :
-              'border-border text-text-muted hover:border-brand hover:text-brand'
-            }`}
-          >
-            {friendStatus === 'sent' ? '✓ Friend request sent' : friendStatus === 'friends' ? '✓ Friends' : '+ Add friend'}
-          </button>
+          {renderMatchStatusBanner()}
+          {renderMatchActions()}
+          {!isSelf && (
+            <button
+              onClick={handleAddFriend}
+              disabled={friendStatus !== 'none'}
+              className={`w-full py-2 rounded-full border text-xs font-medium transition-colors font-body tracking-wide ${
+                friendStatus === 'sent'    ? 'border-border text-text-muted cursor-default' :
+                friendStatus === 'friends' ? 'border-green-300 text-green-600 cursor-default' :
+                'border-border text-text-muted hover:border-brand hover:text-brand'
+              }`}
+            >
+              {friendStatus === 'sent' ? '✓ Friend request sent' : friendStatus === 'friends' ? '✓ Friends' : '+ Add friend'}
+            </button>
+          )}
         </div>
       </div>
     </div>

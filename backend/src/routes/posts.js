@@ -29,7 +29,7 @@ router.get('/', auth, async (req, res) => {
   const { sport } = req.query
   try {
     let text = `
-      SELECT p.id, u.name AS author, u.sports, p.sport, p.format, p.description, p.created_at
+      SELECT p.id, p.user_id AS author_id, u.name AS author, u.sports, p.sport, p.format, p.description, p.created_at
       FROM posts p
       JOIN users u ON u.id = p.user_id
     `
@@ -45,6 +45,7 @@ router.get('/', auth, async (req, res) => {
       if (typeof sportsArr === 'string') { try { sportsArr = JSON.parse(sportsArr) } catch { sportsArr = [] } }
       return {
         id: row.id,
+        authorId: row.author_id,
         author: row.author,
         initials: initials(row.author),
         sport: row.sport,

@@ -18,37 +18,11 @@ export const getFriendStatuses = async () => {
   return throwIfError(res)
 }
 
-export const getFriends = async () => {
-  const res = await fetch('/api/friends', { headers: authHeader() })
-  return throwIfError(res)
-}
-
-export const getPendingRequests = async () => {
-  const res = await fetch('/api/friends/pending', { headers: authHeader() })
-  return throwIfError(res)
-}
-
 export const sendFriendRequest = async (toUserId) => {
   const res = await fetch('/api/friends', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeader() },
     body: JSON.stringify({ toUserId }),
-  })
-  return throwIfError(res)
-}
-
-export const acceptFriendRequest = async (id) => {
-  const res = await fetch(`/api/friends/${id}/accept`, {
-    method: 'PATCH',
-    headers: authHeader(),
-  })
-  return throwIfError(res)
-}
-
-export const removeFriend = async (id) => {
-  const res = await fetch(`/api/friends/${id}`, {
-    method: 'DELETE',
-    headers: authHeader(),
   })
   return throwIfError(res)
 }

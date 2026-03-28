@@ -12,7 +12,6 @@ import Discover from "./pages/Discover";
 import Posts from "./pages/Posts";
 import PostSession from "./pages/PostSession";
 import Matches from "./pages/Matches";
-import Friends from "./pages/Friends";
 import Profile from "./pages/Profile";
 
 // Components
@@ -98,7 +97,6 @@ function AppContent() {
             <Route path="/posts"        element={<Posts />} />
             <Route path="/post-session" element={<PostSession />} />
             <Route path="/matches"      element={<Matches />} />
-            <Route path="/friends"      element={<Friends />} />
             <Route path="/profile"      element={<Profile />} />
           </Route>
 

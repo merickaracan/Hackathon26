@@ -2,7 +2,6 @@ const pageTitles = {
   '/discover':     'Discover',
   '/posts':        'Sessions',
   '/matches':      'Connections',
-  '/friends':      'Friends',
   '/profile':      'Profile',
   '/post-session': 'Create session',
 }
@@ -11,7 +10,6 @@ const pageSubtitles = {
   '/discover':     'Find students near you who share your sport and schedule.',
   '/posts':        'Browse open sessions posted by students at your university.',
   '/matches':      'Your confirmed partners and pending requests.',
-  '/friends':      'Manage your friends and incoming friend requests.',
   '/profile':      'Your athletic identity on campus.',
   '/post-session': 'Let other players near you know you\'re looking to play.',
 }
