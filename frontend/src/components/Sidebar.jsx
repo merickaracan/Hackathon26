@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 const navItems = [
   { to: '/discover',     label: 'Discover' },
   { to: '/posts',        label: 'Sessions' },
-  { to: '/matches',      label: 'Connections', badge: true },
+  { to: '/requests',     label: 'Requests', badge: true },
   { to: '/post-session', label: 'Create session', highlight: true },
   { to: '/profile',      label: 'Profile' },
 ]

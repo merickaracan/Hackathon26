@@ -3,26 +3,19 @@ import { useAuth } from '../context/AuthContext'
 import SportFilter from '../components/SportFilter'
 import PostCard from '../components/PostCard'
 import { getPosts } from '../api/posts'
-import { getRelationshipStatuses } from '../api/requests'
 
 export default function Posts() {
   const { user } = useAuth()
   const [sport, setSport] = useState('')
   const [posts, setPosts] = useState([])
-  const [sentPostIds, setSentPostIds] = useState(new Set())
 
   useEffect(() => {
-    // Post-level request tracking is handled server-side; initialise empty
-    getRelationshipStatuses().catch(() => {})
-  }, [])
-
-  useEffect(() => {
-    getPosts(sport)
+    getPosts()
       .then(setPosts)
       .catch(() => setPosts([]))
-  }, [sport])
+  }, [])
 
-  const visible = posts.filter(p => !sport || p.sport === sport)
+  const visible = sport ? posts.filter(p => p.sport === sport) : posts
 
   return (
     <div>
@@ -32,7 +25,7 @@ export default function Posts() {
           <PostCard
             key={post.id}
             post={post}
-            initialRequestSent={sentPostIds.has(post.id)}
+            initialRequestSent={!!post.requestSent}
             isOwnPost={post.authorId != null && user?.id != null && Number(post.authorId) === Number(user.id)}
           />
         ))}
