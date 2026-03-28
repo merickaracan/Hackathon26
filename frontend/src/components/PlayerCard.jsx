@@ -2,72 +2,81 @@ import { useState } from 'react'
 import { useToast } from '../context/ToastContext'
 import api from '../api/axios'
 
-const bannerStyles = {
-  tennis:    { bg: 'from-green-700 to-green-500',  emoji: '🎾' },
-  padel:     { bg: 'from-blue-700 to-blue-500',    emoji: '🏓' },
-  badminton: { bg: 'from-amber-600 to-amber-400',  emoji: '🏸' },
-  squash:    { bg: 'from-purple-700 to-purple-500', emoji: '🥎' },
-  running:   { bg: 'from-red-700 to-red-500',      emoji: '🏃' },
+const sportMeta = {
+  tennis:    { stripe: 'bg-emerald-700',  label: 'Tennis' },
+  padel:     { stripe: 'bg-sky-700',      label: 'Padel' },
+  badminton: { stripe: 'bg-amber-600',    label: 'Badminton' },
+  squash:    { stripe: 'bg-violet-700',   label: 'Squash' },
+  running:   { stripe: 'bg-rose-700',     label: 'Running' },
 }
+
+const skillWidth = { beginner: '33%', intermediate: '66%', advanced: '100%' }
 
 export default function PlayerCard({ player, onPass }) {
   const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
-  const banner = bannerStyles[player.sport] || bannerStyles.tennis
+  const meta = sportMeta[player.sport] || sportMeta.tennis
 
   const handleRequest = async () => {
     setLoading(true)
     try {
       await api.post('/api/requests', { playerId: player.id })
-      showToast(`Match request sent to ${player.name}! 🎯`)
-    } catch {
-      showToast(`Request sent to ${player.name}! 🎯`)
-    } finally {
-      setLoading(false)
-    }
+    } catch {}
+    showToast(`Request sent to ${player.name}.`)
+    setLoading(false)
   }
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-black/5 flex flex-col">
-      {/* Banner */}
-      <div className={`bg-gradient-to-r ${banner.bg} px-4 py-4 flex items-center justify-between`}>
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 text-white capitalize flex items-center gap-1`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-white inline-block"></span>
-          {player.skill}
-        </span>
-        <span className="text-5xl">{banner.emoji}</span>
-      </div>
+    <div className="bg-white rounded-2xl overflow-hidden border border-border flex flex-col hover:shadow-md transition-shadow">
+      {/* Top stripe */}
+      <div className={`h-1.5 w-full ${meta.stripe}`} />
 
-      {/* Body */}
-      <div className="p-4 flex flex-col gap-3 flex-1">
+      <div className="p-5 flex flex-col gap-4 flex-1">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="font-display text-xl font-semibold tracking-tight text-text-main">{player.name}</h3>
+            <p className="text-xs text-text-muted font-body mt-0.5">{player.distance} away · {player.frequency}</p>
+          </div>
+          <span className="text-[10px] tracking-widest uppercase font-semibold text-text-muted border border-border px-2 py-1 rounded font-body">
+            {meta.label}
+          </span>
+        </div>
+
+        {/* Skill bar */}
         <div>
-          <h3 className="font-display font-bold text-lg text-brand-dark">{player.name}</h3>
-          <p className="text-sm text-gray-500">{player.distance} · {player.sport} · {player.frequency}</p>
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-[10px] tracking-widest uppercase font-semibold text-text-muted font-body">Skill</span>
+            <span className="text-[10px] text-text-muted font-body capitalize">{player.skill}</span>
+          </div>
+          <div className="h-0.5 bg-border rounded-full overflow-hidden">
+            <div className="h-full bg-gold rounded-full" style={{ width: skillWidth[player.skill] || '50%' }} />
+          </div>
         </div>
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5">
           {player.tags.map((tag) => (
-            <span key={tag} className="text-xs px-2.5 py-1 bg-brand-bg text-gray-600 rounded-full border border-black/5">
+            <span key={tag} className="text-[11px] px-2.5 py-1 bg-brand-bg text-text-muted rounded-full border border-border font-body">
               {tag}
             </span>
           ))}
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-auto pt-2">
+        <div className="flex gap-2 mt-auto pt-1">
           <button
             onClick={onPass}
-            className="flex-1 py-2 rounded-full border border-gray-200 text-gray-500 text-sm font-medium hover:border-gray-400 transition-colors"
+            className="flex-1 py-2 rounded-full border border-border text-text-muted text-xs font-medium hover:border-brand hover:text-brand transition-colors font-body tracking-wide"
           >
-            ✕ Pass
+            Decline
           </button>
           <button
             onClick={handleRequest}
             disabled={loading}
-            className="flex-1 py-2 rounded-full bg-brand text-white text-sm font-medium hover:bg-brand/90 transition-colors disabled:opacity-60"
+            className="flex-1 py-2 rounded-full bg-brand text-white text-xs font-medium hover:bg-brand/90 transition-colors disabled:opacity-50 font-body tracking-wide"
           >
-            🎯 Request match
+            Request to play
           </button>
         </div>
       </div>

@@ -1,23 +1,23 @@
 const sports = [
-  { value: '', label: 'All sports' },
-  { value: 'tennis', label: '🎾 Tennis' },
-  { value: 'padel', label: '🏓 Padel' },
-  { value: 'badminton', label: '🏸 Badminton' },
-  { value: 'squash', label: '🥎 Squash' },
-  { value: 'running', label: '🏃 Running' },
+  { value: '',           label: 'All Sports' },
+  { value: 'tennis',     label: 'Tennis' },
+  { value: 'padel',      label: 'Padel' },
+  { value: 'badminton',  label: 'Badminton' },
+  { value: 'squash',     label: 'Squash' },
+  { value: 'running',    label: 'Running' },
 ]
 
 export default function SportFilter({ active, onChange }) {
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-2 mb-8">
       {sports.map((s) => (
         <button
           key={s.value}
           onClick={() => onChange(s.value)}
-          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+          className={`px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all font-body ${
             active === s.value
-              ? 'bg-brand text-white'
-              : 'bg-white text-gray-600 border border-gray-200 hover:border-brand hover:text-brand'
+              ? 'border border-gold text-brand bg-brand-tint'
+              : 'border border-border text-text-muted bg-white hover:border-gold hover:text-brand'
           }`}
         >
           {s.label}
