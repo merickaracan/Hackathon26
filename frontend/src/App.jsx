@@ -19,7 +19,7 @@ function DashboardRoutes() {
         <Route path="/posts" element={<Posts />} />
         <Route path="/matches" element={<Matches />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/" element={<Navigate to="/discover" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </Layout>
   )

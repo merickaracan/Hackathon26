@@ -5,17 +5,19 @@ import api from '../api/axios'
 export default function Register() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ name: '', email: '', password: '', sport: 'tennis', skill: 'beginner' })
+  const [error, setError] = useState('')
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError('')
     try {
       const res = await api.post('/api/auth/register', form)
       localStorage.setItem('token', res.data.token)
-    } catch {
-      localStorage.setItem('token', 'mock-token')
+      navigate('/discover')
+    } catch (err) {
+      setError(err.response?.data?.error || 'Registration failed. Please try again.')
     }
-    navigate('/discover')
   }
 
   const inputClass  = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-brand font-body"
@@ -36,6 +38,8 @@ export default function Register() {
         <div className="border border-white/8 rounded-2xl p-7 bg-white/3">
           <h2 className="font-display text-2xl font-semibold text-white tracking-tight mb-1">Join Sinder</h2>
           <p className="text-white/40 text-xs font-body mb-7">Connect with fellow students. Play more. Go further.</p>
+
+          {error && <p className="text-red-400 text-xs mb-4 font-body">{error}</p>}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>

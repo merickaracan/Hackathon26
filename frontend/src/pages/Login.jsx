@@ -16,9 +16,8 @@ export default function Login() {
       const res = await api.post('/api/auth/login', form)
       localStorage.setItem('token', res.data.token)
       navigate('/discover')
-    } catch {
-      localStorage.setItem('token', 'mock-token')
-      navigate('/discover')
+    } catch (err) {
+      setError(err.response?.data?.error || 'Invalid email or password')
     }
   }
 
