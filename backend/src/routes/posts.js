@@ -1,11 +1,11 @@
 const router = require('express').Router()
 const auth = require('../middleware/requireAuth')
-const { query } = require('../db')
+const { query } = require('../../database/db')
 
 const MOCK_POSTS = [
   { id: 1, author: 'Alex L.',  initials: 'AL', sport: 'tennis',    format: 'Singles',       timeAgo: '20 min ago', desc: 'Looking for a hitting partner this Sunday at 9am. Around 3.5–4.0 level.', skill: 68 },
   { id: 2, author: 'Maya T.', initials: 'MT', sport: 'padel',     format: 'Mixed doubles', timeAgo: '1 hr ago',   desc: 'Beginner padel player looking for a relaxed partner — any level welcome.', skill: 22 },
-  { id: 3, author: 'Ravi B.', initials: 'RB', sport: 'badminton', format: 'Doubles',        timeAgo: '3 hrs ago',  desc: 'Got a doubles court booked at the Sports Centre on Saturday afternoon — need one more player.', skill: 48 },
+  { id: 3, author: 'Ravi B.', initials: 'RB', sport: 'football',  format: 'Group / open',  timeAgo: '3 hrs ago',  desc: 'Organising a 5-a-side at the Sports Centre on Saturday afternoon — need a few more players.', skill: 48 },
 ]
 
 function timeAgo(date) {
@@ -40,20 +40,38 @@ router.get('/', auth, async (req, res) => {
     }
     text += ` ORDER BY p.created_at DESC`
     const result = await query(text, params)
-    const posts = result.rows.map(row => ({
-      id: row.id,
-      author: row.author,
-      initials: initials(row.author),
-      sport: row.sport,
-      format: row.format,
-      timeAgo: timeAgo(row.created_at),
-      desc: row.description,
-      skill: skillPercent((row.sports && row.sports[0] && row.sports[0].skill) || 'beginner'),
-    }))
+    const posts = result.rows.map(row => {
+      let sportsArr = row.sports
+      if (typeof sportsArr === 'string') { try { sportsArr = JSON.parse(sportsArr) } catch { sportsArr = [] } }
+      return {
+        id: row.id,
+        author: row.author,
+        initials: initials(row.author),
+        sport: row.sport,
+        format: row.format,
+        timeAgo: timeAgo(row.created_at),
+        desc: row.description,
+        skill: skillPercent((sportsArr && sportsArr[0] && sportsArr[0].skill) || 'beginner'),
+      }
+    })
     return res.json(posts)
   } catch {
     const filtered = sport ? MOCK_POSTS.filter(p => p.sport === sport) : MOCK_POSTS
     return res.json(filtered)
+  }
+})
+
+// GET /api/posts/mine — current user's own sessions
+router.get('/mine', auth, async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT id, sport, format, datetime, location, description, score, created_at
+       FROM posts WHERE user_id = $1 ORDER BY datetime DESC`,
+      [req.user.id]
+    )
+    return res.json(result.rows)
+  } catch {
+    return res.json([])
   }
 })
 
@@ -71,6 +89,22 @@ router.post('/', auth, async (req, res) => {
     return res.status(201).json({ id: result.rows[0].id })
   } catch {
     return res.status(201).json({ id: Date.now() })
+  }
+})
+
+// PATCH /api/posts/:id/score — record score for a session
+router.patch('/:id/score', auth, async (req, res) => {
+  const { score } = req.body
+  if (!score) return res.status(400).json({ error: 'score is required' })
+  try {
+    const result = await query(
+      'UPDATE posts SET score = $1 WHERE id = $2 AND user_id = $3 RETURNING id',
+      [score, req.params.id, req.user.id]
+    )
+    if (!result.rows[0]) return res.status(404).json({ error: 'Session not found' })
+    return res.json({ success: true })
+  } catch {
+    return res.json({ success: true })
   }
 })
 

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import api from '../api/axios'
+import { login as apiLogin, register as apiRegister } from '../api/auth'
+import { getMe } from '../api/users'
 
 const AuthContext = createContext(null)
 
@@ -20,10 +21,28 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!user?.id) { setProfile(null); return }
-    api.get('/api/users/me')
-      .then(res => setProfile(res.data))
-      .catch(() => {})
+    getMe()
+      .then(data => setProfile(data))
+      .catch((err) => {
+        if (err.response) {
+          localStorage.removeItem('token')
+          setUser(null)
+          setProfile(null)
+        }
+      })
   }, [user?.id])
+
+  const login = async (email, password) => {
+    const data = await apiLogin(email, password)
+    localStorage.setItem('token', data.token)
+    setUser(decodeToken(data.token))
+  }
+
+  const register = async (name, email, password, sport, skill_level) => {
+    const data = await apiRegister(name, email, password, sport, skill_level)
+    localStorage.setItem('token', data.token)
+    setUser(decodeToken(data.token))
+  }
 
   const logout = () => {
     localStorage.removeItem('token')
@@ -32,7 +51,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, profile, logout }}>
+    <AuthContext.Provider value={{ user, setUser, profile, setProfile, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )

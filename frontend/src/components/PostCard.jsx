@@ -1,12 +1,25 @@
+import { useState } from 'react'
 import { useToast } from '../context/ToastContext'
-import api from '../api/axios'
+import { sendRequest } from '../api/requests'
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, initialRequestSent = false }) {
   const { showToast } = useToast()
+  const [requestSent, setRequestSent] = useState(initialRequestSent)
+  const [loading, setLoading] = useState(false)
 
   const handleRequest = async () => {
-    try { await api.post('/api/requests', { postId: post.id }) } catch {}
-    showToast('Request sent.')
+    setLoading(true)
+    try {
+      await sendRequest({ postId: post.id })
+      setRequestSent(true)
+      showToast('Request sent.')
+    } catch (err) {
+      const msg = err?.response?.data?.error
+      if (msg === 'Request already sent') setRequestSent(true)
+      else showToast(msg || 'Failed to send request.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -42,9 +55,14 @@ export default function PostCard({ post }) {
         <span className="text-[11px] text-text-muted font-body">{post.format}</span>
         <button
           onClick={handleRequest}
-          className="px-5 py-1.5 rounded-full border border-brand text-brand text-xs font-medium hover:bg-brand-tint transition-colors font-body tracking-wide"
+          disabled={requestSent || loading}
+          className={`px-5 py-1.5 rounded-full border text-xs font-medium transition-colors font-body tracking-wide ${
+            requestSent
+              ? 'border-border text-text-muted cursor-default'
+              : 'border-brand text-brand hover:bg-brand-tint disabled:opacity-50'
+          }`}
         >
-          Send request
+          {requestSent ? '✓ Request sent' : loading ? '…' : 'Send request'}
         </button>
       </div>
     </div>

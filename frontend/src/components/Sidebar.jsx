@@ -1,11 +1,13 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const navItems = [
-  { to: '/discover',  label: 'Discover' },
-  { to: '/posts',     label: 'Sessions' },
-  { to: '/matches',   label: 'Connections', badge: true },
-  { to: '/profile',   label: 'Profile' },
+  { to: '/discover',     label: 'Discover' },
+  { to: '/posts',        label: 'Sessions' },
+  { to: '/matches',      label: 'Connections', badge: true },
+  { to: '/friends',      label: 'Friends' },
+  { to: '/post-session', label: 'Create session', highlight: true },
+  { to: '/profile',      label: 'Profile' },
 ]
 
 export default function Sidebar({ matchCount = 0 }) {
@@ -24,7 +26,7 @@ export default function Sidebar({ matchCount = 0 }) {
       {/* Desktop */}
       <aside className="hidden md:flex flex-col w-60 min-h-screen bg-brand-dark fixed left-0 top-0 z-30">
         <div className="px-7 py-8 border-b border-white/5">
-          <span className="font-display text-3xl font-semibold tracking-tight">
+          <span className="font-display text-3xl font-bold tracking-tight">
             <span className="text-brand">Sin</span>
             <span className="text-white">der</span>
           </span>
@@ -53,6 +55,16 @@ export default function Sidebar({ matchCount = 0 }) {
             </NavLink>
           ))}
         </nav>
+
+        {/* Post session CTA */}
+        <div className="px-4 pb-4">
+          <Link
+            to="/post-session"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-brand text-white text-sm font-semibold font-body hover:bg-brand/90 transition-colors tracking-wide"
+          >
+            <span className="text-base leading-none">+</span> Post session
+          </Link>
+        </div>
 
         <div className="px-5 py-4 border-t border-white/5">
           <div className="flex items-center gap-3">
@@ -83,7 +95,9 @@ export default function Sidebar({ matchCount = 0 }) {
             to={item.to}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center py-3 text-[11px] gap-0.5 font-body ${
-                isActive ? 'text-brand' : 'text-white/40'
+                item.highlight
+                  ? isActive ? 'text-brand font-semibold' : 'text-brand/70 font-semibold'
+                  : isActive ? 'text-brand' : 'text-white/40'
               }`
             }
           >

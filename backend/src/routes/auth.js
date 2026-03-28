@@ -1,8 +1,8 @@
 const router = require('express').Router()
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { query } = require('../db')
 const auth = require('../middleware/requireAuth')
+const { getUserByEmail, getUserById, createUser } = require('../userService')
 
 const VALID_SKILLS = ['beginner', 'intermediate', 'advanced']
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -19,26 +19,22 @@ function makeToken(user) {
 router.post('/register', async (req, res) => {
   const { name, email, password, sport, skill_level } = req.body
 
-  if (!name)                          return res.status(400).json({ error: 'Name is required' })
-  if (!email || !EMAIL_RE.test(email)) return res.status(400).json({ error: 'Valid email is required' })
-  if (!password || password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' })
-  if (!sport)                         return res.status(400).json({ error: 'Sport is required' })
+  if (!name)                               return res.status(400).json({ error: 'Name is required' })
+  if (!email || !EMAIL_RE.test(email))     return res.status(400).json({ error: 'Valid email is required' })
+  if (!password || password.length < 8)   return res.status(400).json({ error: 'Password must be at least 8 characters' })
+  if (!sport)                              return res.status(400).json({ error: 'Sport is required' })
   if (!VALID_SKILLS.includes(skill_level)) return res.status(400).json({ error: 'Skill must be beginner, intermediate, or advanced' })
-
-  const sports = [{ sport, skill: skill_level }]
 
   try {
     const hash = await bcrypt.hash(password, 10)
-    const result = await query(
-      `INSERT INTO users (name, email, password, sports)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, name, email, sports, created_at`,
-      [name, email, hash, JSON.stringify(sports)]
-    )
-    const user = result.rows[0]
-    return res.status(201).json({ token: makeToken(user), user: { id: user.id, name: user.name, email: user.email, sports: user.sports } })
+    const user = await createUser(name, email, hash, sport, skill_level)
+    return res.status(201).json({
+      token: makeToken(user),
+      user: { id: user.id, name: user.name, email: user.email, sports: user.sports },
+    })
   } catch (err) {
-    if (err.code === '23505') return res.status(409).json({ error: 'Email already in use' })
+    const isDuplicate = err.code === '23505' || err.message?.includes('UNIQUE constraint failed')
+    if (isDuplicate) return res.status(409).json({ error: 'Email already in use' })
     console.error('Register error:', err.message)
     return res.status(500).json({ error: 'Registration failed' })
   }
@@ -51,8 +47,7 @@ router.post('/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'Email and password are required' })
 
   try {
-    const result = await query('SELECT * FROM users WHERE email = $1', [email])
-    const user = result.rows[0]
+    const user = await getUserByEmail(email)
     if (!user) return res.status(401).json({ error: 'Invalid email or password' })
 
     const match = await bcrypt.compare(password, user.password)
@@ -60,7 +55,7 @@ router.post('/login', async (req, res) => {
 
     return res.json({
       token: makeToken(user),
-      user: { id: user.id, name: user.name, email: user.email, sports: user.sports }
+      user: { id: user.id, name: user.name, email: user.email, sports: user.sports },
     })
   } catch (err) {
     console.error('Login error:', err.message)
@@ -71,17 +66,11 @@ router.post('/login', async (req, res) => {
 // GET /api/auth/me (protected)
 router.get('/me', auth, async (req, res) => {
   try {
-    const result = await query(
-      `SELECT id, name, email, sports, availability,
-              notif_match_request, notif_match_accepted, notif_reminder_24h,
-              created_at
-       FROM users WHERE id = $1`,
-      [req.user.id]
-    )
-    if (!result.rows[0]) return res.status(404).json({ error: 'User not found' })
-    return res.json(result.rows[0])
+    const user = await getUserById(req.user.id)
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    return res.json(user)
   } catch (err) {
-    console.error('GET /me error:', err.message)
+    console.error('GET /auth/me error:', err.message)
     return res.status(500).json({ error: 'Failed to fetch user' })
   }
 })

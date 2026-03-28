@@ -1,75 +1,288 @@
-import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import api from '../api/axios'
-import { useAuth } from '../context/AuthContext'
+import { useState } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
+import {
+  Layout,
+  Row,
+  Col,
+  Typography,
+  Card,
+  Form,
+  Input,
+  Button,
+  Space,
+  App,
+} from "antd";
+import { UserOutlined, LockOutlined, LoginOutlined } from "@ant-design/icons";
+import { useAuth } from "../context/AuthContext";
 
-export default function Login() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { setUser } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [error, setError] = useState('')
-  const registered = location.state?.registered
+const { Title, Text } = Typography;
+const { Content } = Layout;
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+const BRAND = "#16A34A";
+const DARK_BG = "#0B1A10";
+const CARD_BG = "#122A1A";
+const BORDER = "rgba(255,255,255,0.08)";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
+const pageStyle = {
+  minHeight: "100vh",
+  background: `radial-gradient(ellipse 80% 60% at 50% 100%, rgba(22,163,74,0.18) 0%, transparent 70%), ${DARK_BG}`,
+  fontFamily: "'DM Sans', sans-serif",
+};
+
+const brandCardStyle = {
+  height: "100%",
+  minHeight: 520,
+  background: `linear-gradient(145deg, ${BRAND} 0%, #0F5C2E 100%)`,
+  border: "none",
+  borderRadius: 20,
+};
+
+const brandCardBodyStyle = {
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "100%",
+  padding: "40px 32px",
+  gap: 0,
+};
+
+const formCardStyle = {
+  borderRadius: 20,
+  minHeight: 520,
+  background: CARD_BG,
+  border: `1px solid ${BORDER}`,
+};
+
+const formCardBodyStyle = {
+  padding: "36px 32px",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  height: "100%",
+};
+
+const submitBtnStyle = {
+  backgroundColor: BRAND,
+  borderColor: BRAND,
+  borderRadius: 100,
+  height: 46,
+  fontSize: 15,
+  fontWeight: 600,
+};
+
+const inputStyle = {
+  borderRadius: 10,
+  background: "rgba(255,255,255,0.05)",
+  borderColor: BORDER,
+  color: "#fff",
+};
+
+const labelStyle = { color: "rgba(255,255,255,0.7)", fontSize: 13 };
+
+const SPORT_TAGS = ["🎾 Tennis", "🏓 Padel", "⚽ Football", "🏀 Basketball", "🏃 Running"];
+
+const loginRules = {
+  email: [
+    { required: true, message: "Please enter your email." },
+    { type: "email", message: "Please enter a valid email address." },
+  ],
+  password: [
+    { required: true, message: "Please enter your password." },
+    { min: 8, message: "Password must be at least 8 characters." },
+  ],
+};
+
+function injectFonts() {
+  if (document.getElementById("sinder-fonts")) return;
+  const link = document.createElement("link");
+  link.id = "sinder-fonts";
+  link.rel = "stylesheet";
+  link.href =
+    "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap";
+  document.head.appendChild(link);
+}
+injectFonts();
+
+function BrandPanel({ subtitle }) {
+  return (
+    <Card variant="borderless" style={brandCardStyle} styles={{ body: brandCardBodyStyle }}>
+      <div style={{ marginBottom: 28, textAlign: "center" }}>
+        <span
+          style={{
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: 48,
+            fontWeight: 800,
+            letterSpacing: -2,
+            color: "white",
+          }}
+        >
+          Sin
+          <span style={{ color: "rgba(255,255,255,0.55)" }}>der</span>
+        </span>
+      </div>
+
+      <Title level={4} style={{ color: "#fff", margin: "0 0 10px", textAlign: "center" }}>
+        {subtitle}
+      </Title>
+      <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 14, textAlign: "center", lineHeight: 1.7 }}>
+        Connect with players near you based on sport, skill level, and availability.
+      </Text>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 32, justifyContent: "center" }}>
+        {SPORT_TAGS.map((s) => (
+          <span
+            key={s}
+            style={{
+              background: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              borderRadius: 100,
+              padding: "5px 14px",
+              fontSize: 13,
+              color: "#fff",
+              fontWeight: 500,
+            }}
+          >
+            {s}
+          </span>
+        ))}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 24,
+          marginTop: 36,
+          borderTop: "1px solid rgba(255,255,255,0.15)",
+          paddingTop: 24,
+          width: "100%",
+          justifyContent: "center",
+        }}
+      >
+        {[["500+", "Players"], ["8", "Sports"], ["Bath, UK", "Location"]].map(([val, lbl]) => (
+          <div key={lbl} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", fontFamily: "'Space Grotesk', sans-serif" }}>{val}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>{lbl}</div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function LoginForm() {
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login, user } = useAuth();
+  const { message } = App.useApp();
+
+  if (user) return <Navigate to="/discover" replace />;
+
+  const onFinish = async (values) => {
+    setLoading(true);
     try {
-      const res = await api.post('/api/auth/login', form)
-      const token = res.data.token
-      localStorage.setItem('token', token)
-      const payload = JSON.parse(atob(token.split('.')[1]))
-      setUser(payload)
-      navigate('/discover')
+      await login(values.email, values.password);
+      message.success("Welcome back!");
+      navigate("/discover");
     } catch (err) {
-      setError(err.response?.data?.error || 'Invalid email or password')
+      const msg = err?.response?.data?.error || "Invalid email or password.";
+      message.error(msg);
+    } finally {
+      setLoading(false);
     }
-  }
-
-  const inputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-brand font-body"
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0C0C0A' }}>
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-10">
-          <span className="font-display text-5xl font-semibold tracking-tight">
-            <span className="text-brand">Sin</span>
-            <span className="text-white">der</span>
-          </span>
-          <p className="text-white/30 text-xs mt-3 tracking-widest uppercase font-body">Where campus meets court</p>
-        </div>
+    <Layout style={pageStyle}>
+      <Content>
+        <Row justify="center" align="middle" style={{ minHeight: "100vh", padding: "24px" }}>
+          <Col xs={24} md={20} lg={16} xl={14}>
+            <Row gutter={[24, 24]}>
+              <Col xs={0} md={12}>
+                <BrandPanel subtitle="Find your perfect sports partner" />
+              </Col>
 
-        <div className="border border-white/8 rounded-2xl p-7 bg-white/3">
-          <h2 className="font-display text-2xl font-semibold text-white tracking-tight mb-1">Welcome back</h2>
-          <p className="text-white/40 text-xs font-body mb-7">Connect with fellow students. Play more. Go further.</p>
+              <Col xs={24} md={12}>
+                <Card
+                  variant="borderless"
+                  style={formCardStyle}
+                  styles={{ body: formCardBodyStyle }}
+                >
+                  <Space direction="vertical" size={4} style={{ width: "100%", marginBottom: 28 }}>
+                    <Title
+                      level={3}
+                      style={{
+                        margin: 0,
+                        color: "#fff",
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontWeight: 800,
+                        letterSpacing: -0.5,
+                        textAlign: "center",
+                      }}
+                    >
+                      Sign in
+                    </Title>
+                    <Text style={{ color: "rgba(255,255,255,0.45)", fontSize: 13, textAlign: "center", display: "block" }}>
+                      Welcome back — let's find your next game
+                    </Text>
+                  </Space>
 
-          {registered && (
-            <p className="text-emerald-400 text-xs mb-4 font-body">Account created — sign in to continue.</p>
-          )}
-          {error && <p className="text-red-400 text-xs mb-4 font-body">{error}</p>}
+                  <Form layout="vertical" onFinish={onFinish} autoComplete="off">
+                    <Form.Item label={<span style={labelStyle}>Email</span>} name="email" rules={loginRules.email}>
+                      <Input
+                        prefix={<UserOutlined style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        placeholder="you@example.com"
+                        size="large"
+                        style={inputStyle}
+                      />
+                    </Form.Item>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div>
-              <label className="text-[10px] tracking-widest uppercase font-semibold text-white/30 block mb-1.5 font-body">Email</label>
-              <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="your@university.edu" required className={inputClass} />
-            </div>
-            <div>
-              <label className="text-[10px] tracking-widest uppercase font-semibold text-white/30 block mb-1.5 font-body">Password</label>
-              <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="••••••••" required className={inputClass} />
-            </div>
-            <button type="submit" className="w-full py-3 rounded-full bg-brand text-white font-medium text-sm hover:bg-brand/90 transition-colors mt-2 font-body tracking-wide">
-              Sign in
-            </button>
-          </form>
-        </div>
+                    <Form.Item label={<span style={labelStyle}>Password</span>} name="password" rules={loginRules.password}>
+                      <Input.Password
+                        prefix={<LockOutlined style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        placeholder="Min. 8 characters"
+                        size="large"
+                        style={inputStyle}
+                      />
+                    </Form.Item>
 
-        <p className="text-center text-white/25 text-xs mt-5 font-body">
-          New to Sinder?{' '}
-          <Link to="/register" className="text-brand hover:underline">Create an account</Link>
-        </p>
-      </div>
-    </div>
-  )
+                    <Form.Item style={{ marginBottom: 12, marginTop: 4 }}>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        size="large"
+                        icon={<LoginOutlined />}
+                        loading={loading}
+                        block
+                        style={submitBtnStyle}
+                      >
+                        {loading ? "Signing in..." : "Sign in"}
+                      </Button>
+                    </Form.Item>
+                  </Form>
+
+                  <div style={{ textAlign: "center", marginTop: 8 }}>
+                    <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
+                      New to Sinder?{" "}
+                      <a href="/register" style={{ color: BRAND, fontWeight: 600 }}>
+                        Create an account
+                      </a>
+                    </Text>
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      </Content>
+    </Layout>
+  );
+}
+
+export default function Login() {
+  return (
+    <App>
+      <LoginForm />
+    </App>
+  );
 }

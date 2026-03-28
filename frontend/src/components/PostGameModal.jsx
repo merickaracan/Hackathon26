@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useToast } from '../context/ToastContext'
-import api from '../api/axios'
+import { createPost } from '../api/posts'
 
 export default function PostGameModal({ onClose }) {
   const { showToast } = useToast()
@@ -9,7 +9,7 @@ export default function PostGameModal({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    try { await api.post('/api/posts', form) } catch {}
+    try { await createPost(form) } catch {}
     showToast('Session posted.')
     onClose()
   }
@@ -35,8 +35,8 @@ export default function PostGameModal({ onClose }) {
               <select name="sport" value={form.sport} onChange={handleChange} className={selectClass}>
                 <option value="tennis">Tennis</option>
                 <option value="padel">Padel</option>
-                <option value="badminton">Badminton</option>
-                <option value="squash">Squash</option>
+                <option value="football">Football</option>
+                <option value="basketball">Basketball</option>
                 <option value="running">Running</option>
               </select>
             </div>

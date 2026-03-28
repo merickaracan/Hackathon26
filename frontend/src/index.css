@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,10 +7,10 @@
 * { box-sizing: border-box; }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: #FAFAF7;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: #F0FDF4;
   margin: 0;
-  color: #1A1917;
+  color: #111111;
   -webkit-font-smoothing: antialiased;
 }
 

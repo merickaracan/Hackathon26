@@ -2,9 +2,12 @@ const sports = [
   { value: '',           label: 'All Sports' },
   { value: 'tennis',     label: 'Tennis' },
   { value: 'padel',      label: 'Padel' },
-  { value: 'badminton',  label: 'Badminton' },
-  { value: 'squash',     label: 'Squash' },
+  { value: 'football',   label: 'Football' },
+  { value: 'basketball', label: 'Basketball' },
   { value: 'running',    label: 'Running' },
+  { value: 'cycling',    label: 'Cycling' },
+  { value: 'swimming',   label: 'Swimming' },
+  { value: 'golf',       label: 'Golf' },
 ]
 
 export default function SportFilter({ active, onChange }) {

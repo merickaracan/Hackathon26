@@ -24,8 +24,10 @@ CREATE TABLE IF NOT EXISTS posts (
   datetime    TIMESTAMPTZ NOT NULL,
   location    TEXT NOT NULL,
   description TEXT DEFAULT '',
+  score       TEXT DEFAULT NULL,
   created_at  TIMESTAMPTZ DEFAULT now()
 );
+-- If posts table already exists, run: ALTER TABLE posts ADD COLUMN IF NOT EXISTS score TEXT DEFAULT NULL;
 
 CREATE TABLE IF NOT EXISTS requests (
   id         SERIAL PRIMARY KEY,

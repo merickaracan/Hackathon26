@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.1",
+    "antd": "^6.3.4",
     "autoprefixer": "^10.4.27",
     "axios": "^1.14.0",
     "postcss": "^8.5.8",
