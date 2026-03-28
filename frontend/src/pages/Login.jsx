@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { setUser } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
+  const registered = location.state?.registered
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
@@ -43,6 +45,9 @@ export default function Login() {
           <h2 className="font-display text-2xl font-semibold text-white tracking-tight mb-1">Welcome back</h2>
           <p className="text-white/40 text-xs font-body mb-7">Connect with fellow students. Play more. Go further.</p>
 
+          {registered && (
+            <p className="text-emerald-400 text-xs mb-4 font-body">Account created — sign in to continue.</p>
+          )}
           {error && <p className="text-red-400 text-xs mb-4 font-body">{error}</p>}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

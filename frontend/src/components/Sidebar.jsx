@@ -9,9 +9,11 @@ const navItems = [
 ]
 
 export default function Sidebar({ matchCount = 0 }) {
-  const { user, logout } = useAuth()
+  const { user, profile, logout } = useAuth()
   const navigate = useNavigate()
-  const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?'
+  const displayName = profile?.name || user?.name || '—'
+  const primarySport = profile?.sports?.[0]
+  const initials = displayName !== '—' ? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?'
 
   const handleLogout = () => {
     logout()
@@ -58,8 +60,10 @@ export default function Sidebar({ matchCount = 0 }) {
               {initials}
             </div>
             <div className="overflow-hidden flex-1">
-              <p className="text-white text-xs font-medium truncate">{user?.name || '—'}</p>
-              <p className="text-white/30 text-[10px] truncate tracking-wide capitalize">{user?.sport} · {user?.skill}</p>
+              <p className="text-white text-xs font-medium truncate">{displayName}</p>
+              <p className="text-white/30 text-[10px] truncate tracking-wide capitalize">
+                {primarySport ? `${primarySport.sport} · ${primarySport.skill}` : '—'}
+              </p>
             </div>
           </div>
           <button

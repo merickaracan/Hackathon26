@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 export default function Register() {
   const navigate = useNavigate()
   const { setUser } = useAuth()
-  const [form, setForm] = useState({ name: '', email: '', password: '', sport: 'tennis', skill: 'beginner' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', sport: 'tennis', skill_level: 'beginner' })
   const [error, setError] = useState('')
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
@@ -14,12 +14,8 @@ export default function Register() {
     e.preventDefault()
     setError('')
     try {
-      const res = await api.post('/api/auth/register', form)
-      const token = res.data.token
-      localStorage.setItem('token', token)
-      const payload = JSON.parse(atob(token.split('.')[1]))
-      setUser(payload)
-      navigate('/discover')
+      await api.post('/api/auth/register', form)
+      navigate('/login', { state: { registered: true } })
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.')
     }
@@ -72,7 +68,7 @@ export default function Register() {
               </div>
               <div>
                 <label className={labelClass}>Skill</label>
-                <select name="skill" value={form.skill} onChange={handleChange} className={selectClass}>
+                <select name="skill_level" value={form.skill_level} onChange={handleChange} className={selectClass}>
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
                   <option value="advanced">Advanced</option>
