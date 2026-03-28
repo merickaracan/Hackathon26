@@ -5,16 +5,10 @@ import PostCard from '../components/PostCard'
 import { getPosts } from '../api/posts'
 import { getRelationshipStatuses } from '../api/requests'
 
-const mockPosts = [
-  { id: 1, author: 'Alex L.',  initials: 'AL', sport: 'tennis',    format: 'Singles',       timeAgo: '20 min ago', desc: 'Looking for a hitting partner this Sunday at 9am. Around 3.5–4.0 level. All standards welcome.',    skill: 68 },
-  { id: 2, author: 'Maya T.', initials: 'MT', sport: 'padel',     format: 'Mixed doubles', timeAgo: '1 hr ago',   desc: 'Beginner padel player, just started last term. Looking for a relaxed partner — any level welcome.',   skill: 22 },
-  { id: 3, author: 'Ravi B.', initials: 'RB', sport: 'football',  format: 'Group / open',  timeAgo: '3 hrs ago',  desc: 'Organising a 5-a-side at the Sports Centre on Saturday afternoon — need a few more players.',         skill: 48 },
-]
-
 export default function Posts() {
   const { user } = useAuth()
   const [sport, setSport] = useState('')
-  const [posts, setPosts] = useState(mockPosts)
+  const [posts, setPosts] = useState([])
   const [sentPostIds, setSentPostIds] = useState(new Set())
 
   useEffect(() => {
@@ -25,7 +19,7 @@ export default function Posts() {
   useEffect(() => {
     getPosts(sport)
       .then(setPosts)
-      .catch(() => setPosts(mockPosts))
+      .catch(() => setPosts([]))
   }, [sport])
 
   const visible = posts.filter(p => !sport || p.sport === sport)

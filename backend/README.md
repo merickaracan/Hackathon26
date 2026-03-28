@@ -26,7 +26,7 @@
 Server runs on http://localhost:3000
 
 ## Without a database
-All routes fall back to mock data if PostgreSQL is unavailable, so the frontend works immediately in development.
+If a route cannot read from the database, it returns an empty list (no demo players or sessions).
 
 ## Endpoints
 | Method | Path | Auth |

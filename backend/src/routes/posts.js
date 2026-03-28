@@ -2,12 +2,6 @@ const router = require('express').Router()
 const auth = require('../middleware/requireAuth')
 const { query } = require('../../database/db')
 
-const MOCK_POSTS = [
-  { id: 1, author: 'Alex L.',  initials: 'AL', sport: 'tennis',    format: 'Singles',       timeAgo: '20 min ago', desc: 'Looking for a hitting partner this Sunday at 9am. Around 3.5–4.0 level.', skill: 68 },
-  { id: 2, author: 'Maya T.', initials: 'MT', sport: 'padel',     format: 'Mixed doubles', timeAgo: '1 hr ago',   desc: 'Beginner padel player looking for a relaxed partner — any level welcome.', skill: 22 },
-  { id: 3, author: 'Ravi B.', initials: 'RB', sport: 'football',  format: 'Group / open',  timeAgo: '3 hrs ago',  desc: 'Organising a 5-a-side at the Sports Centre on Saturday afternoon — need a few more players.', skill: 48 },
-]
-
 function timeAgo(date) {
   const diff = Math.floor((Date.now() - new Date(date)) / 1000)
   if (diff < 60) return 'just now'
@@ -57,8 +51,7 @@ router.get('/', auth, async (req, res) => {
     })
     return res.json(posts)
   } catch {
-    const filtered = sport ? MOCK_POSTS.filter(p => p.sport === sport) : MOCK_POSTS
-    return res.json(filtered)
+    return res.json([])
   }
 })
 

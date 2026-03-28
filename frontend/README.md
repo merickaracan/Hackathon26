@@ -19,4 +19,4 @@
    npm run dev
    ```
 
-The app runs on http://localhost:5173. If no backend is available, mock data is used automatically.
+The app runs on http://localhost:5173. If the API is unavailable, lists load empty until the backend responds.
