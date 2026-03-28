@@ -1,17 +1,47 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { ToastProvider } from './context/ToastContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import Layout from './components/Layout'
 import Login from './pages/Login'
-import Signup from './pages/Signup'
+import Register from './pages/Register'
+import Discover from './pages/Discover'
+import Posts from './pages/Posts'
+import Matches from './pages/Matches'
+import Profile from './pages/Profile'
 
-function App() {
+function DashboardRoutes() {
+  const [matchCount] = useState(2)
   return (
-    <BrowserRouter>
+    <Layout matchCount={matchCount}>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/discover" element={<Discover />} />
+        <Route path="/posts" element={<Posts />} />
+        <Route path="/matches" element={<Matches />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/" element={<Navigate to="/discover" replace />} />
       </Routes>
-    </BrowserRouter>
+    </Layout>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <DashboardRoutes />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
+  )
+}
