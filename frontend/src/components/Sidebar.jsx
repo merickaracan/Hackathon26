@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const navItems = [
   { to: '/discover',  label: 'Discover' },
@@ -7,9 +8,15 @@ const navItems = [
   { to: '/profile',   label: 'Profile' },
 ]
 
-const mockUser = { name: 'Alex J.', sport: 'Tennis', skill: 'Intermediate' }
-
 export default function Sidebar({ matchCount = 0 }) {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?'
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
   return (
     <>
       {/* Desktop */}
@@ -45,14 +52,22 @@ export default function Sidebar({ matchCount = 0 }) {
           ))}
         </nav>
 
-        <div className="px-5 py-5 border-t border-white/5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-            {mockUser.name.split(' ').map(n => n[0]).join('')}
+        <div className="px-5 py-4 border-t border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+              {initials}
+            </div>
+            <div className="overflow-hidden flex-1">
+              <p className="text-white text-xs font-medium truncate">{user?.name || '—'}</p>
+              <p className="text-white/30 text-[10px] truncate tracking-wide capitalize">{user?.sport} · {user?.skill}</p>
+            </div>
           </div>
-          <div className="overflow-hidden">
-            <p className="text-white text-xs font-medium truncate">{mockUser.name}</p>
-            <p className="text-white/30 text-[10px] truncate tracking-wide">{mockUser.sport} · {mockUser.skill}</p>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="mt-3 w-full text-left text-[10px] tracking-widest uppercase text-white/20 hover:text-brand transition-colors font-body"
+          >
+            Sign out
+          </button>
         </div>
       </aside>
 

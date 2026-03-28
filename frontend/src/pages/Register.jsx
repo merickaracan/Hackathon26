@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api/axios'
+import { useAuth } from '../context/AuthContext'
 
 export default function Register() {
   const navigate = useNavigate()
+  const { setUser } = useAuth()
   const [form, setForm] = useState({ name: '', email: '', password: '', sport: 'tennis', skill: 'beginner' })
   const [error, setError] = useState('')
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
@@ -13,7 +15,10 @@ export default function Register() {
     setError('')
     try {
       const res = await api.post('/api/auth/register', form)
-      localStorage.setItem('token', res.data.token)
+      const token = res.data.token
+      localStorage.setItem('token', token)
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      setUser(payload)
       navigate('/discover')
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.')

@@ -2,6 +2,20 @@ const router = require('express').Router()
 const auth = require('../middleware/auth')
 const { query } = require('../db')
 
+// GET /api/users/me
+router.get('/me', auth, async (req, res) => {
+  try {
+    const result = await query(
+      'SELECT id, name, email, university, location, sport, skill FROM users WHERE id = $1',
+      [req.user.id]
+    )
+    if (!result.rows[0]) return res.status(404).json({ error: 'User not found' })
+    return res.json(result.rows[0])
+  } catch {
+    return res.status(500).json({ error: 'Failed to fetch user' })
+  }
+})
+
 // PATCH /api/users/me/notifications
 router.patch('/me/notifications', auth, async (req, res) => {
   const { matchRequest, matchAccepted, reminder24h, reminder2h, newPlayers, postExpiring } = req.body

@@ -1,26 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useToast } from '../context/ToastContext'
+import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 
-const mockUser = {
-  name: 'Alex Johnson',
-  location: 'London, UK',
-  university: 'University College London',
-  sports: [
-    { name: 'Tennis',  skill: 72 },
-    { name: 'Padel',   skill: 40 },
-  ],
-  tags: ['Weekend mornings', 'Competitive', 'Singles'],
-}
-
-const notifDefaults = {
-  matchRequest:  true,
-  matchAccepted: true,
-  reminder24h:   true,
-  reminder2h:    false,
-  newPlayers:    false,
-  postExpiring:  true,
-}
+const skillPercent = { beginner: 33, intermediate: 66, advanced: 100 }
 
 const notifLabels = {
   matchRequest:  'Match request received',
@@ -31,9 +14,22 @@ const notifLabels = {
   postExpiring:  'Post expiring soon',
 }
 
+const notifDefaults = {
+  matchRequest: true, matchAccepted: true, reminder24h: true,
+  reminder2h: false, newPlayers: false, postExpiring: true,
+}
+
 export default function Profile() {
   const { showToast } = useToast()
+  const { user } = useAuth()
+  const [profile, setProfile] = useState(null)
   const [notifs, setNotifs] = useState(notifDefaults)
+
+  useEffect(() => {
+    api.get('/api/users/me')
+      .then(res => setProfile(res.data))
+      .catch(() => setProfile(user))
+  }, [user?.id])
 
   const toggle = async (key) => {
     const updated = { ...notifs, [key]: !notifs[key] }
@@ -42,44 +38,38 @@ export default function Profile() {
     showToast('Preferences updated.')
   }
 
+  const name     = profile?.name     || user?.name     || '—'
+  const sport    = profile?.sport    || user?.sport    || '—'
+  const skill    = profile?.skill    || user?.skill    || 'beginner'
+  const uni      = profile?.university || 'University'
+  const location = profile?.location  || '—'
+  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
       {/* User card */}
       <div className="bg-white rounded-2xl p-7 border border-border flex flex-col gap-6">
         <div className="flex flex-col items-center text-center gap-3">
           <div className="w-20 h-20 rounded-full border-2 border-gold flex items-center justify-center bg-brand-tint text-brand text-2xl font-bold font-display">
-            {mockUser.name.split(' ').map(n => n[0]).join('')}
+            {initials}
           </div>
           <div>
-            <h2 className="font-display text-2xl font-semibold tracking-tight text-text-main">{mockUser.name}</h2>
-            <p className="text-xs text-text-muted font-body mt-0.5">{mockUser.university}</p>
-            <p className="text-xs text-text-muted font-body">📍 {mockUser.location}</p>
+            <h2 className="font-display text-2xl font-semibold tracking-tight text-text-main">{name}</h2>
+            <p className="text-xs text-text-muted font-body mt-0.5">{uni}</p>
+            {location !== '—' && <p className="text-xs text-text-muted font-body">📍 {location}</p>}
           </div>
         </div>
 
         <div>
-          <p className="text-[10px] tracking-widest uppercase font-semibold text-text-muted mb-4 font-body">Sports & skill</p>
-          <div className="flex flex-col gap-4">
-            {mockUser.sports.map((s) => (
-              <div key={s.name}>
-                <div className="flex justify-between text-sm mb-1.5 font-body">
-                  <span className="font-medium text-text-main">{s.name}</span>
-                  <span className="text-text-muted">{s.skill}%</span>
-                </div>
-                <div className="h-0.5 bg-border rounded-full overflow-hidden">
-                  <div className="h-full bg-gold rounded-full" style={{ width: `${s.skill}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className="text-[10px] tracking-widest uppercase font-semibold text-text-muted mb-3 font-body">Availability</p>
-          <div className="flex flex-wrap gap-2">
-            {mockUser.tags.map((tag) => (
-              <span key={tag} className="text-xs px-3 py-1.5 rounded-full bg-brand-bg border border-border text-text-muted font-body">{tag}</span>
-            ))}
+          <p className="text-[10px] tracking-widest uppercase font-semibold text-text-muted mb-4 font-body">Sport & skill</p>
+          <div>
+            <div className="flex justify-between text-sm mb-1.5 font-body">
+              <span className="font-medium text-text-main capitalize">{sport}</span>
+              <span className="text-text-muted capitalize">{skill}</span>
+            </div>
+            <div className="h-0.5 bg-border rounded-full overflow-hidden">
+              <div className="h-full bg-gold rounded-full" style={{ width: `${skillPercent[skill] || 33}%` }} />
+            </div>
           </div>
         </div>
 
