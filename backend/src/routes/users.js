@@ -1,17 +1,22 @@
 const router = require('express').Router()
-const auth = require('../middleware/auth')
+const auth = require('../middleware/requireAuth')
 const { query } = require('../db')
 
 // GET /api/users/me
 router.get('/me', auth, async (req, res) => {
   try {
     const result = await query(
-      'SELECT id, name, email, university, location, sport, skill FROM users WHERE id = $1',
+      `SELECT id, name, email, sports, availability, university, location,
+              notif_match_request, notif_match_accepted, notif_reminder_24h,
+              notif_reminder_2h, notif_new_players, notif_post_expiring,
+              created_at
+       FROM users WHERE id = $1`,
       [req.user.id]
     )
     if (!result.rows[0]) return res.status(404).json({ error: 'User not found' })
     return res.json(result.rows[0])
-  } catch {
+  } catch (err) {
+    console.error('GET /users/me error:', err.message)
     return res.status(500).json({ error: 'Failed to fetch user' })
   }
 })
@@ -21,20 +26,20 @@ router.patch('/me/notifications', auth, async (req, res) => {
   const { matchRequest, matchAccepted, reminder24h, reminder2h, newPlayers, postExpiring } = req.body
   try {
     await query(
-      `INSERT INTO notification_prefs (user_id, match_request, match_accepted, reminder_24h, reminder_2h, new_players, post_expiring)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
-       ON CONFLICT (user_id) DO UPDATE SET
-         match_request  = EXCLUDED.match_request,
-         match_accepted = EXCLUDED.match_accepted,
-         reminder_24h   = EXCLUDED.reminder_24h,
-         reminder_2h    = EXCLUDED.reminder_2h,
-         new_players    = EXCLUDED.new_players,
-         post_expiring  = EXCLUDED.post_expiring`,
-      [req.user.id, matchRequest, matchAccepted, reminder24h, reminder2h, newPlayers, postExpiring]
+      `UPDATE users SET
+         notif_match_request  = $1,
+         notif_match_accepted = $2,
+         notif_reminder_24h   = $3,
+         notif_reminder_2h    = $4,
+         notif_new_players    = $5,
+         notif_post_expiring  = $6
+       WHERE id = $7`,
+      [matchRequest, matchAccepted, reminder24h, reminder2h, newPlayers, postExpiring, req.user.id]
     )
     return res.json({ success: true })
-  } catch {
-    return res.json({ success: true })
+  } catch (err) {
+    console.error('PATCH /notifications error:', err.message)
+    return res.status(500).json({ error: 'Failed to update preferences' })
   }
 })
 

@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const auth = require('../middleware/auth')
+const auth = require('../middleware/requireAuth')
 const { query } = require('../db')
 
 const MOCK_PLAYERS = [
@@ -13,22 +13,25 @@ const MOCK_PLAYERS = [
 router.get('/nearby', auth, async (req, res) => {
   const { sport } = req.query
   try {
-    let text = `SELECT id, name, sport, skill FROM users WHERE id != $1`
+    let text = `SELECT id, name, sports FROM users WHERE id != $1`
     const params = [req.user.id]
     if (sport) {
-      text += ` AND sport = $2`
-      params.push(sport)
+      text += ` AND sports @> $2::jsonb`
+      params.push(JSON.stringify([{ sport }]))
     }
     const result = await query(text, params)
-    const players = result.rows.map(u => ({
-      id: u.id,
-      name: u.name,
-      sport: u.sport,
-      skill: u.skill,
-      distance: '< 1 mi',
-      frequency: 'Weekly',
-      tags: [u.skill.charAt(0).toUpperCase() + u.skill.slice(1)],
-    }))
+    const players = result.rows.map(u => {
+      const primary = (u.sports && u.sports[0]) || {}
+      return {
+        id: u.id,
+        name: u.name,
+        sport: primary.sport || 'unknown',
+        skill: primary.skill || 'beginner',
+        distance: '< 1 mi',
+        frequency: 'Weekly',
+        tags: [primary.skill ? primary.skill.charAt(0).toUpperCase() + primary.skill.slice(1) : 'Beginner'],
+      }
+    })
     return res.json(players)
   } catch {
     const filtered = sport ? MOCK_PLAYERS.filter(p => p.sport === sport) : MOCK_PLAYERS

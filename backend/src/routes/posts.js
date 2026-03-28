@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const auth = require('../middleware/auth')
+const auth = require('../middleware/requireAuth')
 const { query } = require('../db')
 
 const MOCK_POSTS = [
@@ -29,7 +29,7 @@ router.get('/', auth, async (req, res) => {
   const { sport } = req.query
   try {
     let text = `
-      SELECT p.id, u.name AS author, u.skill, p.sport, p.format, p.description, p.created_at
+      SELECT p.id, u.name AS author, u.sports, p.sport, p.format, p.description, p.created_at
       FROM posts p
       JOIN users u ON u.id = p.user_id
     `
@@ -48,7 +48,7 @@ router.get('/', auth, async (req, res) => {
       format: row.format,
       timeAgo: timeAgo(row.created_at),
       desc: row.description,
-      skill: skillPercent(row.skill),
+      skill: skillPercent((row.sports && row.sports[0] && row.sports[0].skill) || 'beginner'),
     }))
     return res.json(posts)
   } catch {

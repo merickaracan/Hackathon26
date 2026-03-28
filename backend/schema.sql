@@ -1,22 +1,19 @@
 CREATE TABLE IF NOT EXISTS users (
-  id         SERIAL PRIMARY KEY,
-  name       TEXT NOT NULL,
-  email      TEXT UNIQUE NOT NULL,
-  password   TEXT NOT NULL,
-  university TEXT,
-  location   TEXT,
-  sport      TEXT NOT NULL,
-  skill      TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS notification_prefs (
-  user_id        INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-  match_request  BOOLEAN DEFAULT true,
-  match_accepted BOOLEAN DEFAULT true,
-  reminder_24h   BOOLEAN DEFAULT true,
-  reminder_2h    BOOLEAN DEFAULT false,
-  new_players    BOOLEAN DEFAULT false,
-  post_expiring  BOOLEAN DEFAULT true
+  id                   SERIAL PRIMARY KEY,
+  name                 TEXT NOT NULL,
+  email                TEXT UNIQUE NOT NULL,
+  password             TEXT NOT NULL,
+  sports               JSONB    DEFAULT '[]',
+  availability         TEXT[]   DEFAULT '{}',
+  university           TEXT,
+  location             TEXT,
+  notif_match_request  BOOLEAN  DEFAULT true,
+  notif_match_accepted BOOLEAN  DEFAULT true,
+  notif_reminder_24h   BOOLEAN  DEFAULT true,
+  notif_reminder_2h    BOOLEAN  DEFAULT false,
+  notif_new_players    BOOLEAN  DEFAULT false,
+  notif_post_expiring  BOOLEAN  DEFAULT true,
+  created_at           TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS posts (
