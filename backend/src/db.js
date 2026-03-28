@@ -1,6 +1,3 @@
-const mysql = require("mysql2");
-const fs = require("fs");
-const path = require("path");
 require("dotenv").config();
 
 const localConnection = true;
@@ -12,6 +9,10 @@ if (localConnection) {
   query = db.query.bind(db);
 } else {
   console.log("Connecting to Aiven MySQL...");
+
+  const mysql = require("mysql2");
+  const fs = require("fs");
+  const path = require("path");
 
   const pool = mysql.createPool({
     host: process.env.DB_HOST,
