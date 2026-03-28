@@ -1,24 +1,40 @@
-const { Pool } = require('pg')
+const mysql = require("mysql2");
+const fs = require("fs");
+const path = require("path");
+require("dotenv").config();
 
-// Strip sslmode from the URL so the Pool ssl option takes full control
-const connectionString = (process.env.DATABASE_URL || '').replace(/[?&]sslmode=[^&]*/g, '')
+const localConnection = true;
+let query;
 
-const pool = new Pool({
-  connectionString,
-  ssl: { rejectUnauthorized: false },
-})
+if (localConnection) {
+  console.log("Using local SQLite");
+  const db = require("./dbLocal");
+  query = db.query.bind(db);
+} else {
+  console.log("Connecting to Aiven MySQL...");
 
-pool.on('error', (err) => {
-  console.error('❌ Database connection lost:', err.message)
-})
+  const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    ssl: {
+      ca: fs.readFileSync(path.join(__dirname, "ca.pem")),
+    },
+    waitForConnections: true,
+    connectionLimit: 10,
+  });
 
-const query = (text, params) => pool.query(text, params)
+  const db = pool.promise();
+  query = db.query.bind(db);
 
-pool.query('SELECT 1')
-  .then(() => console.log('✅ Connected to Aiven PostgreSQL database'))
-  .catch((err) => {
-    console.error('❌ Failed to connect to Aiven database:', err.message)
-    process.exit(1)
-  })
+  db.query("SELECT 1")
+    .then(() => console.log("✅ Connected to Aiven MySQL database"))
+    .catch((err) => {
+      console.error("❌ Failed to connect to Aiven database:", err.message);
+      process.exit(1);
+    });
+}
 
-module.exports = { query, pool }
+module.exports = { query };
