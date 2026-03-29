@@ -29,6 +29,34 @@ router.patch('/me', auth, async (req, res) => {
   }
 })
 
+// GET /api/users/:id — public profile + past sessions
+router.get('/:id', auth, async (req, res) => {
+  try {
+    const { query } = require('../../database/db')
+    const { rows: userRows } = await query(
+      `SELECT id, name, university, location, sports, avatar, instagram, created_at
+       FROM users WHERE id = $1`,
+      [req.params.id]
+    )
+    if (!userRows[0]) return res.status(404).json({ error: 'User not found' })
+    const user = userRows[0]
+    if (typeof user.sports === 'string') { try { user.sports = JSON.parse(user.sports) } catch { user.sports = [] } }
+
+    const { rows: sessions } = await query(
+      `SELECT id, sport, format, datetime, location, description, score
+       FROM posts
+       WHERE user_id = $1 AND datetime < CURRENT_TIMESTAMP
+       ORDER BY datetime DESC
+       LIMIT 10`,
+      [req.params.id]
+    )
+    return res.json({ ...user, recentSessions: sessions })
+  } catch (err) {
+    console.error('GET /users/:id error:', err.message)
+    return res.status(500).json({ error: 'Failed to fetch profile' })
+  }
+})
+
 // PATCH /api/users/me/notifications
 router.patch('/me/notifications', auth, async (req, res) => {
   try {

@@ -4,9 +4,8 @@ import { useAuth } from '../context/AuthContext'
 const navItems = [
   { to: '/discover',     label: 'Discover' },
   { to: '/posts',        label: 'Sessions' },
-  { to: '/matches',      label: 'Connections', badge: true },
-  { to: '/rate-session', label: 'Rate session', highlight: true },
   { to: '/requests',     label: 'Requests', badge: true },
+  { to: '/rate-session', label: 'Rate session' },
   { to: '/post-session', label: 'Create session', highlight: true },
   { to: '/profile',      label: 'Profile' },
 ]
@@ -17,6 +16,7 @@ export default function Sidebar({ matchCount = 0 }) {
   const displayName = profile?.name || user?.name || '—'
   const primarySport = profile?.sports?.[0]
   const initials = displayName !== '—' ? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?'
+  const avatar = profile?.avatar || null
 
   const handleLogout = () => {
     logout()
@@ -68,8 +68,11 @@ export default function Sidebar({ matchCount = 0 }) {
 
         <div className="px-5 py-4 border-t border-white/5">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-              {initials}
+            <div className="w-8 h-8 rounded-full bg-brand flex-shrink-0 overflow-hidden flex items-center justify-center">
+              {avatar
+                ? <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
+                : <span className="text-white text-xs font-semibold">{initials}</span>
+              }
             </div>
             <div className="overflow-hidden flex-1">
               <p className="text-white text-xs font-medium truncate">{displayName}</p>

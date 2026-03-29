@@ -23,3 +23,6 @@ export const submitRating = (toUserId, sport, actualSkill, comment = '') =>
 
 export const getGivenRatings = () =>
   fetch(`${BASE}/given`, { headers: authHeaders() }).then(throwIfError)
+
+export const getReceivedRatings = () =>
+  fetch(`${BASE}/received`, { headers: authHeaders() }).then(throwIfError)

@@ -10,6 +10,12 @@ export const getPosts = async (sport = '') => {
   return res.json()
 }
 
+export const getCompletedSessions = async () => {
+  const res = await fetch('/api/posts/completed', { headers: authHeader() })
+  if (!res.ok) throw new Error('Failed to fetch completed sessions')
+  return res.json()
+}
+
 export const getMyPosts = async () => {
   const res = await fetch('/api/posts/mine', { headers: authHeader() })
   if (!res.ok) throw new Error('Failed to fetch sessions')

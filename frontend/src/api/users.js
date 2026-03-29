@@ -27,6 +27,11 @@ export const updateProfile = async (updates) => {
   return throwIfError(res)
 }
 
+export const getUserProfile = async (id) => {
+  const res = await fetch(`/api/users/${id}`, { headers: authHeader() })
+  return throwIfError(res)
+}
+
 export const updateNotifications = async (prefs) => {
   const res = await fetch('/api/users/me/notifications', {
     method: 'PATCH',

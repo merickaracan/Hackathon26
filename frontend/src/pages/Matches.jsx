@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
 import { getRelationships, acceptRequest, declineRequest, unmatch, removeConnection } from '../api/requests'
 import { getMatches } from '../api/matches'
@@ -140,7 +141,7 @@ export default function Matches() {
               <div key={r.id} className="flex items-center gap-4 px-6 py-4">
                 <Avatar name={r.other_user_name} sport={r.sport} />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-text-main text-sm font-body">{r.other_user_name}</p>
+                  <Link to={`/players/${r.other_user_id}`} className="font-semibold text-text-main text-sm font-body hover:text-brand transition-colors">{r.other_user_name}</Link>
                   <p className="text-xs text-text-muted font-body capitalize">{r.sport}{r.skill ? ` · ${r.skill}` : ''}</p>
                 </div>
                 <span className="text-[10px] uppercase tracking-widest text-brand font-semibold font-body mr-2 flex-shrink-0">Incoming</span>
@@ -156,7 +157,7 @@ export default function Matches() {
               <div key={r.id} className="flex items-center gap-4 px-6 py-4">
                 <Avatar name={r.name} sport={r.sport} />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-text-main text-sm font-body">{r.name}</p>
+                  <Link to={`/players/${r.user_id}`} className="font-semibold text-text-main text-sm font-body hover:text-brand transition-colors">{r.name}</Link>
                   <p className="text-xs text-text-muted font-body capitalize truncate">
                     {r.sport && `${r.sport} · `}{r.location || r.detail}
                     {r.datetime && ` · ${formatDatetime(r.datetime)}`}
@@ -175,7 +176,7 @@ export default function Matches() {
               <div key={r.id} className="flex items-center gap-4 px-6 py-4">
                 <Avatar name={r.other_user_name} sport={r.sport} />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-text-main text-sm font-body">{r.other_user_name}</p>
+                  <Link to={`/players/${r.other_user_id}`} className="font-semibold text-text-main text-sm font-body hover:text-brand transition-colors">{r.other_user_name}</Link>
                   <p className="text-xs text-text-muted font-body capitalize">{r.sport}{r.skill ? ` · ${r.skill}` : ''}</p>
                 </div>
                 <span className="text-[10px] uppercase tracking-widest text-text-muted font-semibold font-body mr-2 flex-shrink-0">Awaiting</span>
@@ -188,7 +189,7 @@ export default function Matches() {
               <div key={r.id} className="flex items-center gap-4 px-6 py-4">
                 <Avatar name={r.name} sport={r.sport} />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-text-main text-sm font-body">{r.name}</p>
+                  <Link to={`/players/${r.user_id}`} className="font-semibold text-text-main text-sm font-body hover:text-brand transition-colors">{r.name}</Link>
                   <p className="text-xs text-text-muted font-body capitalize truncate">{r.detail}</p>
                 </div>
                 <span className="text-[10px] uppercase tracking-widest text-text-muted font-semibold font-body flex-shrink-0">Awaiting</span>
@@ -222,7 +223,7 @@ export default function Matches() {
               <div key={m.id} className="flex items-center gap-4 px-6 py-4">
                 <Avatar name={m.other_user_name} sport={m.sport} />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-text-main text-sm font-body">{m.other_user_name}</p>
+                  <Link to={`/players/${m.other_user_id}`} className="font-semibold text-text-main text-sm font-body hover:text-brand transition-colors">{m.other_user_name}</Link>
                   <p className="text-xs text-text-muted font-body capitalize">{m.sport}{m.skill ? ` · ${m.skill}` : ''}</p>
                 </div>
                 <span className="text-[10px] uppercase tracking-widest text-brand font-semibold font-body mr-2 flex-shrink-0">Match</span>
@@ -238,7 +239,7 @@ export default function Matches() {
               <div key={m.id} className="flex items-center gap-4 px-6 py-4">
                 <Avatar name={m.name} sport={m.sport} />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-text-main text-sm font-body">{m.name}</p>
+                  <Link to={`/players/${m.user_id}`} className="font-semibold text-text-main text-sm font-body hover:text-brand transition-colors">{m.name}</Link>
                   <p className="text-xs text-text-muted font-body capitalize truncate">{m.detail}</p>
                 </div>
                 <span className="text-[10px] uppercase tracking-widest text-brand font-semibold font-body mr-2 flex-shrink-0">Session</span>

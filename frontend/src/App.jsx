@@ -15,6 +15,7 @@ import PostSession from "./pages/PostSession";
 import Matches from "./pages/Matches";
 import RateSession from "./pages/RateSession";
 import Profile from "./pages/Profile";
+import UserProfile from "./pages/UserProfile";
 
 // Components
 import Layout from "./components/Layout";
@@ -117,6 +118,7 @@ function AppContent() {
             <Route path="/matches"      element={<Navigate to="/requests" replace />} />
             <Route path="/rate-session" element={<RateSession />} />
             <Route path="/profile"      element={<Profile />} />
+            <Route path="/players/:id"  element={<UserProfile />} />
           </Route>
 
           {/* Catch-all */}

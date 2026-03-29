@@ -17,6 +17,7 @@ import {
   MailOutlined,
   LockOutlined,
   CheckCircleOutlined,
+  InstagramOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../context/AuthContext";
 
@@ -226,7 +227,8 @@ function RegisterForm() {
       await register(
         values.name,
         values.email,
-        values.password
+        values.password,
+        values.instagram || ''
       );
       message.success("Account created — welcome to Sinder!");
       navigate('/onboarding');
@@ -365,6 +367,18 @@ function RegisterForm() {
                           visible: passwordVisible,
                           onVisibleChange: setPasswordVisible,
                         }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label={<span style={labelStyle}>Instagram <span style={{ fontWeight: 400, opacity: 0.6 }}>(optional)</span></span>}
+                      name="instagram"
+                    >
+                      <Input
+                        prefix={<InstagramOutlined style={{ color: TEXT_MUTED }} />}
+                        placeholder="@yourhandle"
+                        size="large"
+                        style={inputStyle}
                       />
                     </Form.Item>
 

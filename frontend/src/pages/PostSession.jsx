@@ -35,6 +35,7 @@ export default function PostSession() {
     datetime: '',
     location: '',
     description: '',
+    spots: 2,
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
@@ -107,6 +108,20 @@ export default function PostSession() {
             onChange={handleChange}
             placeholder="e.g. University Sports Centre, Court 3"
             required
+            className={inputClass}
+          />
+        </div>
+
+        {/* Spots */}
+        <div>
+          <label className={labelClass}>Spots available</label>
+          <input
+            type="number"
+            name="spots"
+            value={form.spots}
+            onChange={handleChange}
+            min={1}
+            max={20}
             className={inputClass}
           />
         </div>

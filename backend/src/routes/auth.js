@@ -17,7 +17,7 @@ function makeToken(user) {
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body
+  const { name, email, password, instagram } = req.body
 
   if (!name)                             return res.status(400).json({ error: 'Name is required' })
   if (!email || !EMAIL_RE.test(email))   return res.status(400).json({ error: 'Valid email is required' })
@@ -25,7 +25,9 @@ router.post('/register', async (req, res) => {
 
   try {
     const hash = await bcrypt.hash(password, 10)
-    const user = await createUser(name, email, hash, null, null)
+    // Strip leading @ if user typed it
+    const igHandle = instagram ? instagram.replace(/^@/, '').trim() || null : null
+    const user = await createUser(name, email, hash, null, null, igHandle)
     return res.status(201).json({
       token: makeToken(user),
       user: { id: user.id, name: user.name, email: user.email, sports: user.sports },

@@ -21,6 +21,7 @@ const requests = require('./src/routes/requests');
 const users    = require('./src/routes/users');
 const posts    = require('./src/routes/posts');
 const friends  = require('./src/routes/friends');
+const ratings  = require('./src/routes/ratings');
 
 app.use('/api/auth',     auth);
 app.use('/api/matches',  matches);
@@ -29,6 +30,7 @@ app.use('/api/requests', requests);
 app.use('/api/users',    users);
 app.use('/api/posts',    posts);
 app.use('/api/friends',  friends);
+app.use('/api/ratings',  ratings);
 
 app.get('/health', (_, res) => res.json({ status: 'ok' }));
 

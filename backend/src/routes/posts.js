@@ -25,6 +25,8 @@ router.get('/', auth, async (req, res) => {
     const params = [req.user.id]
     let text = `
       SELECT p.id, p.user_id AS author_id, u.name AS author, u.sports, p.sport, p.format, p.description, p.created_at,
+        p.spots,
+        (SELECT COUNT(*) FROM requests rj WHERE rj.post_id = p.id AND rj.status IN ('pending','accepted')) AS spots_taken,
         CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END AS request_sent
       FROM posts p
       JOIN users u ON u.id = p.user_id
@@ -50,10 +52,56 @@ router.get('/', auth, async (req, res) => {
         desc: row.description,
         skill: skillPercent((sportsArr && sportsArr[0] && sportsArr[0].skill) || 'beginner'),
         requestSent: !!row.request_sent,
+        spots: row.spots ?? 2,
+        spotsLeft: Math.max(0, (row.spots ?? 2) - (row.spots_taken ?? 0)),
       }
     })
     return res.json(posts)
   } catch {
+    return res.json([])
+  }
+})
+
+// GET /api/posts/completed — past sessions the user hosted or joined, with participants
+router.get('/completed', auth, async (req, res) => {
+  try {
+    const { rows: sessions } = await query(
+      `SELECT DISTINCT p.id, p.sport, p.format, p.datetime, p.location, p.description,
+              u.name AS host_name, p.user_id AS host_id
+       FROM posts p
+       JOIN users u ON u.id = p.user_id
+       LEFT JOIN requests r ON r.post_id = p.id AND r.from_user = $1 AND r.status = 'accepted'
+       WHERE p.datetime < CURRENT_TIMESTAMP
+         AND (p.user_id = $1 OR r.id IS NOT NULL)
+       ORDER BY p.datetime DESC`,
+      [req.user.id]
+    )
+
+    const result = []
+    for (const session of sessions) {
+      // Joiners (other than current user)
+      const { rows: joiners } = await query(
+        `SELECT u.id, u.name, u.sports FROM requests r
+         JOIN users u ON u.id = r.from_user
+         WHERE r.post_id = $1 AND r.status = 'accepted' AND r.from_user != $2`,
+        [session.id, req.user.id]
+      )
+      // Host (if not current user)
+      const { rows: hostRow } = await query(
+        `SELECT id, name, sports FROM users WHERE id = $1 AND id != $2`,
+        [session.host_id, req.user.id]
+      )
+      const participants = [...joiners, ...hostRow].map(p => ({
+        id: p.id,
+        name: p.name,
+        sports: typeof p.sports === 'string' ? (() => { try { return JSON.parse(p.sports) } catch { return [] } })() : (p.sports || []),
+      }))
+      result.push({ ...session, participants })
+    }
+
+    return res.json(result)
+  } catch (err) {
+    console.error('GET /posts/completed error:', err.message)
     return res.json([])
   }
 })
@@ -74,14 +122,14 @@ router.get('/mine', auth, async (req, res) => {
 
 // POST /api/posts
 router.post('/', auth, async (req, res) => {
-  const { sport, format, datetime, location, description } = req.body
+  const { sport, format, datetime, location, description, spots } = req.body
   if (!sport || !format || !datetime || !location) {
     return res.status(400).json({ error: 'sport, format, datetime and location are required' })
   }
   try {
     const result = await query(
-      'INSERT INTO posts (user_id, sport, format, datetime, location, description) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-      [req.user.id, sport, format, datetime, location, description || '']
+      'INSERT INTO posts (user_id, sport, format, datetime, location, description, spots) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',
+      [req.user.id, sport, format, datetime, location, description || '', spots ? parseInt(spots, 10) : 2]
     )
     return res.status(201).json({ id: result.rows[0].id })
   } catch {

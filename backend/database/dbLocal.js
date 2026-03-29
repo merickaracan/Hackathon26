@@ -76,6 +76,8 @@ async function setupDatabase() {
         notif_reminder_2h    INTEGER DEFAULT 0,
         notif_new_players    INTEGER DEFAULT 0,
         notif_post_expiring  INTEGER DEFAULT 1,
+        avatar     TEXT DEFAULT NULL,
+        instagram  TEXT DEFAULT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -91,9 +93,16 @@ async function setupDatabase() {
         location    TEXT NOT NULL,
         description TEXT DEFAULT '',
         score       TEXT DEFAULT NULL,
+        spots       INTEGER DEFAULT 2,
         created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    // Migration: add spots column if it doesn't exist yet
+    try { await dbRun(`ALTER TABLE posts ADD COLUMN spots INTEGER DEFAULT 2`) } catch {}
+    // Migration: add avatar column if it doesn't exist yet
+    try { await dbRun(`ALTER TABLE users ADD COLUMN avatar TEXT DEFAULT NULL`) } catch {}
+    // Migration: add instagram column if it doesn't exist yet
+    try { await dbRun(`ALTER TABLE users ADD COLUMN instagram TEXT DEFAULT NULL`) } catch {}
     console.log('✅ posts table ready');
 
     await dbRun(`

@@ -26,7 +26,7 @@ const getUserById = async (id) => {
       `SELECT id, name, email, sports, availability, university, location,
               notif_match_request, notif_match_accepted, notif_reminder_24h,
               notif_reminder_2h, notif_new_players, notif_post_expiring,
-              created_at
+              avatar, instagram, created_at
        FROM users WHERE id = $1`,
       [id]
     )
@@ -54,14 +54,14 @@ const getUserById = async (id) => {
  * @param {string} skillLevel - 'beginner' | 'intermediate' | 'advanced'
  * @returns {Promise<Object>} created user row
  */
-const createUser = async (name, email, hashedPassword, sport, skillLevel) => {
+const createUser = async (name, email, hashedPassword, sport, skillLevel, instagram = null) => {
   const sports = JSON.stringify([{ sport, skill: skillLevel }])
   try {
     const { rows } = await query(
-      `INSERT INTO users (name, email, password, sports)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO users (name, email, password, sports, instagram)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING id, name, email, sports, created_at`,
-      [name, email, hashedPassword, sports]
+      [name, email, hashedPassword, sports, instagram || null]
     )
     const user = rows[0]
     if (user && typeof user.sports === 'string') {
@@ -82,7 +82,7 @@ const createUser = async (name, email, hashedPassword, sport, skillLevel) => {
  * @returns {Promise<Object|null>} updated user row
  */
 const updateUserProfile = async (id, updates = {}) => {
-  const allowed = ['name', 'university', 'location', 'sports', 'availability']
+  const allowed = ['name', 'university', 'location', 'sports', 'availability', 'avatar', 'instagram']
   const fields = []
   const values = []
   let i = 1
@@ -104,7 +104,7 @@ const updateUserProfile = async (id, updates = {}) => {
   try {
     const { rows } = await query(
       `UPDATE users SET ${fields.join(', ')} WHERE id = $${i}
-       RETURNING id, name, email, sports, university, location`,
+       RETURNING id, name, email, sports, university, location, avatar`,
       values
     )
     return rows[0] || null

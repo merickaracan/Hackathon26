@@ -21,7 +21,7 @@ router.get('/', auth, async (req, res) => {
   try {
     // Confirmed — I sent the request and it was accepted
     const sentConfirmedQ = await query(
-      `SELECT r.id, u.name, u.sports, p.sport AS post_sport
+      `SELECT r.id, u.id AS user_id, u.name, u.sports, p.sport AS post_sport
        FROM requests r
        JOIN users u ON u.id = r.to_user
        LEFT JOIN posts p ON p.id = r.post_id
@@ -30,7 +30,7 @@ router.get('/', auth, async (req, res) => {
     )
     // Confirmed — someone sent me a request and I accepted it
     const receivedConfirmedQ = await query(
-      `SELECT r.id, u.name, u.sports, p.sport AS post_sport
+      `SELECT r.id, u.id AS user_id, u.name, u.sports, p.sport AS post_sport
        FROM requests r
        JOIN users u ON u.id = r.from_user
        LEFT JOIN posts p ON p.id = r.post_id
@@ -40,7 +40,7 @@ router.get('/', auth, async (req, res) => {
 
     // Requests I sent that are still pending
     const sentPendingQ = await query(
-      `SELECT r.id, u.name, u.sports, p.sport AS post_sport, r.created_at
+      `SELECT r.id, u.id AS user_id, u.name, u.sports, p.sport AS post_sport, r.created_at
        FROM requests r
        JOIN users u ON u.id = r.to_user
        LEFT JOIN posts p ON p.id = r.post_id
@@ -50,7 +50,7 @@ router.get('/', auth, async (req, res) => {
 
     // Requests sent TO me that need my response
     const incomingQ = await query(
-      `SELECT r.id, u.name, u.sports, p.sport AS post_sport, p.location, p.datetime, r.created_at
+      `SELECT r.id, u.id AS user_id, u.name, u.sports, p.sport AS post_sport, p.location, p.datetime, r.created_at
        FROM requests r
        JOIN users u ON u.id = r.from_user
        LEFT JOIN posts p ON p.id = r.post_id
@@ -60,6 +60,7 @@ router.get('/', auth, async (req, res) => {
 
     const toConfirmed = (r) => ({
       id: r.id,
+      user_id: r.user_id,
       name: r.name,
       sport: r.post_sport || parseSport(r.sports),
       detail: `${r.post_sport || parseSport(r.sports) || 'Sport'} · confirmed`,
@@ -72,12 +73,14 @@ router.get('/', auth, async (req, res) => {
       ],
       pending: sentPendingQ.rows.map(r => ({
         id: r.id,
+        user_id: r.user_id,
         name: r.name,
         sport: r.post_sport || parseSport(r.sports),
         detail: `${r.post_sport || parseSport(r.sports) || 'Sport'} · Sent ${timeAgo(r.created_at)}`,
       })),
       incoming: incomingQ.rows.map(r => ({
         id: r.id,
+        user_id: r.user_id,
         name: r.name,
         sport: r.post_sport || parseSport(r.sports),
         location: r.location || null,
