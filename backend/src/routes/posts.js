@@ -22,14 +22,16 @@ function initials(name) {
 router.get('/', auth, async (req, res) => {
   const { sport } = req.query
   try {
+    const params = [req.user.id]
     let text = `
-      SELECT p.id, p.user_id AS author_id, u.name AS author, u.sports, p.sport, p.format, p.description, p.created_at
+      SELECT p.id, p.user_id AS author_id, u.name AS author, u.sports, p.sport, p.format, p.description, p.created_at,
+        CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END AS request_sent
       FROM posts p
       JOIN users u ON u.id = p.user_id
+      LEFT JOIN requests r ON r.post_id = p.id AND r.from_user = $1 AND r.status IN ('pending','accepted')
     `
-    const params = []
     if (sport) {
-      text += ` WHERE p.sport = $1`
+      text += ` WHERE p.sport = $2`
       params.push(sport)
     }
     text += ` ORDER BY p.created_at DESC`
@@ -47,6 +49,7 @@ router.get('/', auth, async (req, res) => {
         timeAgo: timeAgo(row.created_at),
         desc: row.description,
         skill: skillPercent((sportsArr && sportsArr[0] && sportsArr[0].skill) || 'beginner'),
+        requestSent: !!row.request_sent,
       }
     })
     return res.json(posts)

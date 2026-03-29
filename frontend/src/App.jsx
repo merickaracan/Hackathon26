@@ -113,7 +113,8 @@ function AppContent() {
             <Route path="/discover"     element={<Discover />} />
             <Route path="/posts"        element={<Posts />} />
             <Route path="/post-session" element={<PostSession />} />
-            <Route path="/matches"      element={<Matches />} />
+            <Route path="/requests"     element={<Matches />} />
+            <Route path="/matches"      element={<Navigate to="/requests" replace />} />
             <Route path="/rate-session" element={<RateSession />} />
             <Route path="/profile"      element={<Profile />} />
           </Route>

@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext'
 import SportFilter, { SPORT_FILTER_OPTIONS, sportFilterLabel } from '../components/SportFilter'
 import PlayerCard from '../components/PlayerCard'
 import { getNearbyPlayers } from '../api/players'
-import { getFriendStatuses } from '../api/friends'
 import { getRelationshipStatuses } from '../api/requests'
 
 export default function Discover() {
@@ -13,8 +12,6 @@ export default function Discover() {
 
   // { [playerId]: { id, status, direction } }  — match relationship states
   const [matchStatuses, setMatchStatuses] = useState({})
-  // { [playerId]: 'none'|'pending_sent'|'pending_received'|'accepted' } — friend states
-  const [friendStatuses, setFriendStatuses] = useState({})
 
   const refreshMatchStatuses = useCallback(() => {
     getRelationshipStatuses().then(setMatchStatuses).catch(() => {})
@@ -23,7 +20,6 @@ export default function Discover() {
   // Fetch status maps on mount (PlayerCard syncs when this data arrives after first paint)
   useEffect(() => {
     refreshMatchStatuses()
-    getFriendStatuses().then(setFriendStatuses).catch(() => {})
   }, [refreshMatchStatuses])
 
   useEffect(() => {
@@ -70,8 +66,6 @@ export default function Discover() {
 
   const renderPlayerCard = (player) => {
     const st = statusForPlayer(player.id)
-    const friendSt =
-      friendStatuses[player.id] ?? friendStatuses[String(player.id)] ?? 'none'
     return (
       <PlayerCard
         key={player.id}
@@ -87,7 +81,6 @@ export default function Discover() {
               }
             : null
         }
-        initialFriendStatus={friendSt}
         onMatchStatusesInvalidate={refreshMatchStatuses}
       />
     )

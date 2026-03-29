@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useToast } from '../context/ToastContext'
 import { sendRequest, acceptRequest, declineRequest, unmatch } from '../api/requests'
-import { sendFriendRequest } from '../api/friends'
 
 const sportMeta = {
   tennis:     { stripe: 'bg-emerald-500', label: 'Tennis' },
@@ -31,7 +30,6 @@ export default function PlayerCard({
   player,
   matchRel = null,
   currentUserId = null,
-  initialFriendStatus = 'none',
   onMatchStatusesInvalidate,
 }) {
   const { showToast } = useToast()
@@ -45,14 +43,6 @@ export default function PlayerCard({
   }, [matchRel?.id, matchRel?.status, matchRel?.from_user, matchRel?.to_user])
 
   const matchStatus = toMatchStatus(rel, currentUserId)
-
-  const mapFriendProp = (v) =>
-    v === 'accepted' ? 'friends' : v === 'pending_sent' || v === 'pending_received' ? 'sent' : 'none'
-
-  const [friendStatus, setFriendStatus] = useState(() => mapFriendProp(initialFriendStatus))
-  useEffect(() => {
-    setFriendStatus(mapFriendProp(initialFriendStatus))
-  }, [initialFriendStatus])
 
   const [loading, setLoading] = useState(false)
   const meta = sportMeta[player.sport] || sportMeta.tennis
@@ -130,22 +120,6 @@ export default function PlayerCard({
     }
   }
 
-  // ── Friend request action ──────────────────────────────────────────────────
-
-  const handleAddFriend = async () => {
-    if (isSelf) return
-    try {
-      await sendFriendRequest(player.id)
-      setFriendStatus('sent')
-      showToast(`Friend request sent to ${player.name}.`)
-    } catch (err) {
-      const msg = err?.response?.data?.error
-      if (msg === 'Already friends') setFriendStatus('friends')
-      else if (msg === 'Friend request already sent') setFriendStatus('sent')
-      else showToast(msg || 'Failed to send friend request.')
-    }
-  }
-
   // ── Match status + actions ────────────────────────────────────────────────
 
   const renderMatchStatusBanner = () => {
@@ -155,7 +129,7 @@ export default function PlayerCard({
         <div className="rounded-xl bg-emerald-50 border border-emerald-200/80 px-3 py-2.5">
           <p className="text-xs font-semibold text-emerald-800 font-body">Matched</p>
           <p className="text-[11px] text-emerald-700/90 font-body mt-0.5">
-            You&apos;re connected — use Message (when available) or open Connections for the full list.
+            You&apos;re connected — use Message (when available) or open Requests for the full list.
           </p>
         </div>
       )
@@ -296,19 +270,6 @@ export default function PlayerCard({
         <div className="flex flex-col gap-2 mt-auto pt-1">
           {renderMatchStatusBanner()}
           {renderMatchActions()}
-          {!isSelf && (
-            <button
-              onClick={handleAddFriend}
-              disabled={friendStatus !== 'none'}
-              className={`w-full py-2 rounded-full border text-xs font-medium transition-colors font-body tracking-wide ${
-                friendStatus === 'sent'    ? 'border-border text-text-muted cursor-default' :
-                friendStatus === 'friends' ? 'border-green-300 text-green-600 cursor-default' :
-                'border-border text-text-muted hover:border-brand hover:text-brand'
-              }`}
-            >
-              {friendStatus === 'sent' ? '✓ Friend request sent' : friendStatus === 'friends' ? '✓ Friends' : '+ Add friend'}
-            </button>
-          )}
         </div>
       </div>
     </div>

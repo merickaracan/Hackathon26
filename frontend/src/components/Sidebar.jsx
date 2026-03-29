@@ -6,6 +6,8 @@ const navItems = [
   { to: '/posts',        label: 'Sessions' },
   { to: '/matches',      label: 'Connections', badge: true },
   { to: '/rate-session', label: 'Rate session', highlight: true },
+  { to: '/requests',     label: 'Requests', badge: true },
+  { to: '/post-session', label: 'Create session', highlight: true },
   { to: '/profile',      label: 'Profile' },
 ]
 
