@@ -18,21 +18,23 @@ import { useAuth } from "../context/AuthContext";
 const { Title, Text } = Typography;
 const { Content } = Layout;
 
-const BRAND = "#16A34A";
-const DARK_BG = "#0B1A10";
-const CARD_BG = "#122A1A";
-const BORDER = "rgba(255,255,255,0.08)";
+const BRAND      = "#C4856A";
+const LIGHT_BG   = "#F5F0E8";
+const CARD_BG    = "#EDE4D8";
+const BORDER     = "rgba(44,36,32,0.12)";
+const TEXT_MAIN  = "#2C2420";
+const TEXT_MUTED = "rgba(44,36,32,0.5)";
 
 const pageStyle = {
   minHeight: "100vh",
-  background: `radial-gradient(ellipse 80% 60% at 50% 100%, rgba(22,163,74,0.18) 0%, transparent 70%), ${DARK_BG}`,
+  background: LIGHT_BG,
   fontFamily: "'DM Sans', sans-serif",
 };
 
 const brandCardStyle = {
   height: "100%",
   minHeight: 520,
-  background: `linear-gradient(145deg, ${BRAND} 0%, #0F5C2E 100%)`,
+  background: `linear-gradient(145deg, ${BRAND} 0%, #2C2420 100%)`,
   border: "none",
   borderRadius: 20,
 };
@@ -50,7 +52,7 @@ const brandCardBodyStyle = {
 const formCardStyle = {
   borderRadius: 20,
   minHeight: 520,
-  background: CARD_BG,
+  background: "#fff",
   border: `1px solid ${BORDER}`,
 };
 
@@ -73,12 +75,12 @@ const submitBtnStyle = {
 
 const inputStyle = {
   borderRadius: 10,
-  background: "rgba(255,255,255,0.05)",
+  background: "#fff",
   borderColor: BORDER,
-  color: "#fff",
+  color: TEXT_MAIN,
 };
 
-const labelStyle = { color: "rgba(255,255,255,0.7)", fontSize: 13 };
+const labelStyle = { color: TEXT_MUTED, fontSize: 13 };
 
 const SPORT_TAGS = ["🎾 Tennis", "🏓 Padel", "⚽ Football", "🏀 Basketball", "🏃 Running"];
 
@@ -110,15 +112,14 @@ function BrandPanel({ subtitle }) {
       <div style={{ marginBottom: 28, textAlign: "center" }}>
         <span
           style={{
-            fontFamily: "'Space Grotesk', sans-serif",
+            fontFamily: "'DM Serif Display', serif",
             fontSize: 48,
-            fontWeight: 800,
-            letterSpacing: -2,
+            fontWeight: 700,
+            letterSpacing: -1,
             color: "white",
           }}
         >
-          Sin
-          <span style={{ color: "rgba(255,255,255,0.55)" }}>der</span>
+          Sinder
         </span>
       </div>
 
@@ -159,9 +160,9 @@ function BrandPanel({ subtitle }) {
           justifyContent: "center",
         }}
       >
-        {[["500+", "Players"], ["8", "Sports"], ["Bath, UK", "Location"]].map(([val, lbl]) => (
+        {[["10+", "Sports"], ["Bath University", "Location"]].map(([val, lbl]) => (
           <div key={lbl} style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", fontFamily: "'Space Grotesk', sans-serif" }}>{val}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", fontFamily: "'DM Serif Display', serif" }}>{val}</div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>{lbl}</div>
           </div>
         ))}
@@ -213,16 +214,16 @@ function LoginForm() {
                       level={3}
                       style={{
                         margin: 0,
-                        color: "#fff",
-                        fontFamily: "'Space Grotesk', sans-serif",
-                        fontWeight: 800,
+                        color: TEXT_MAIN,
+                        fontFamily: "'DM Serif Display', serif",
+                        fontWeight: 700,
                         letterSpacing: -0.5,
                         textAlign: "center",
                       }}
                     >
                       Sign in
                     </Title>
-                    <Text style={{ color: "rgba(255,255,255,0.45)", fontSize: 13, textAlign: "center", display: "block" }}>
+                    <Text style={{ color: TEXT_MUTED, fontSize: 13, textAlign: "center", display: "block" }}>
                       Welcome back — let's find your next game
                     </Text>
                   </Space>
@@ -262,7 +263,7 @@ function LoginForm() {
                   </Form>
 
                   <div style={{ textAlign: "center", marginTop: 8 }}>
-                    <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
+                    <Text style={{ color: TEXT_MUTED, fontSize: 13 }}>
                       New to Sinder?{" "}
                       <a href="/register" style={{ color: BRAND, fontWeight: 600 }}>
                         Create an account

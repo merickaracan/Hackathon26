@@ -121,6 +121,20 @@ async function setupDatabase() {
     `);
     console.log('✅ friendships table ready');
 
+    await dbRun(`
+      CREATE TABLE IF NOT EXISTS ratings (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        from_user    INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        to_user      INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        sport        TEXT NOT NULL,
+        actual_skill TEXT NOT NULL,
+        comment      TEXT DEFAULT '',
+        created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(from_user, to_user, sport)
+      )
+    `);
+    console.log('✅ ratings table ready');
+
     console.log('✅ Database initialization complete');
   } catch (err) {
     console.error('❌ Database setup error:', err.message);

@@ -17,17 +17,15 @@ function makeToken(user) {
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-  const { name, email, password, sport, skill_level } = req.body
+  const { name, email, password } = req.body
 
-  if (!name)                               return res.status(400).json({ error: 'Name is required' })
-  if (!email || !EMAIL_RE.test(email))     return res.status(400).json({ error: 'Valid email is required' })
-  if (!password || password.length < 8)   return res.status(400).json({ error: 'Password must be at least 8 characters' })
-  if (!sport)                              return res.status(400).json({ error: 'Sport is required' })
-  if (!VALID_SKILLS.includes(skill_level)) return res.status(400).json({ error: 'Skill must be beginner, intermediate, or advanced' })
+  if (!name)                             return res.status(400).json({ error: 'Name is required' })
+  if (!email || !EMAIL_RE.test(email))   return res.status(400).json({ error: 'Valid email is required' })
+  if (!password || password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' })
 
   try {
     const hash = await bcrypt.hash(password, 10)
-    const user = await createUser(name, email, hash, sport, skill_level)
+    const user = await createUser(name, email, hash, null, null)
     return res.status(201).json({
       token: makeToken(user),
       user: { id: user.id, name: user.name, email: user.email, sports: user.sports },
