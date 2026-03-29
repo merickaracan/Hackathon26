@@ -10,7 +10,6 @@ import {
   Input,
   Button,
   Space,
-  Select,
   App,
 } from "antd";
 import {
@@ -24,27 +23,12 @@ import { useAuth } from "../context/AuthContext";
 const { Title, Text } = Typography;
 const { Content } = Layout;
 
-const BRAND = "#16A34A";
-const DARK_BG = "#0B1A10";
-const CARD_BG = "#122A1A";
-const BORDER = "rgba(255,255,255,0.08)";
-
-const SPORTS = [
-  { label: "🎾 Tennis",    value: "tennis"    },
-  { label: "🏓 Padel",     value: "padel"     },
-  { label: "⚽ Football",   value: "football"   },
-  { label: "🏀 Basketball", value: "basketball" },
-  { label: "🏃 Running",   value: "running"   },
-  { label: "🚴 Cycling",   value: "cycling"   },
-  { label: "🏊 Swimming",  value: "swimming"  },
-  { label: "⛳ Golf",      value: "golf"      },
-];
-
-const SKILLS = [
-  { label: "Beginner",     value: "beginner"     },
-  { label: "Intermediate", value: "intermediate" },
-  { label: "Advanced",     value: "advanced"     },
-];
+const BRAND      = "#C4856A";
+const LIGHT_BG   = "#F5F0E8";
+const CARD_BG    = "#fff";
+const BORDER     = "rgba(44,36,32,0.12)";
+const TEXT_MAIN  = "#2C2420";
+const TEXT_MUTED = "rgba(44,36,32,0.5)";
 
 const SPORT_TAGS = ["🎾 Tennis", "🏓 Padel", "⚽ Football", "🏀 Basketball", "🏃 Running"];
 
@@ -64,25 +48,23 @@ const rules = {
   confirmPassword: [
     { required: true, message: "Please confirm your password." },
   ],
-  sport: [{ required: true, message: "Please select your primary sport." }],
-  skill_level: [{ required: true, message: "Please select your skill level." }],
 };
 
 const pageStyle = {
   minHeight: "100vh",
-  background: `radial-gradient(ellipse 80% 60% at 50% 100%, rgba(22,163,74,0.18) 0%, transparent 70%), ${DARK_BG}`,
+  background: LIGHT_BG,
   fontFamily: "'DM Sans', sans-serif",
 };
 
 const inputStyle = {
   borderRadius: 10,
-  background: "rgba(255,255,255,0.05)",
+  background: "#fff",
   borderColor: BORDER,
-  color: "#fff",
+  color: TEXT_MAIN,
 };
 
 const labelStyle = {
-  color: "rgba(255,255,255,0.7)",
+  color: TEXT_MUTED,
   fontSize: 13,
 };
 
@@ -113,7 +95,7 @@ function BrandPanel() {
       style={{
         height: "100%",
         minHeight: 560,
-        background: `linear-gradient(145deg, ${BRAND} 0%, #0F5C2E 100%)`,
+        background: `linear-gradient(145deg, ${BRAND} 0%, #2C2420 100%)`,
         border: "none",
         borderRadius: 20,
       }}
@@ -131,7 +113,7 @@ function BrandPanel() {
       <div style={{ marginBottom: 28, textAlign: "center" }}>
         <span
           style={{
-            fontFamily: "'Space Grotesk', sans-serif",
+            fontFamily: "'DM Serif Display', serif",
             fontSize: 48,
             fontWeight: 800,
             letterSpacing: -2,
@@ -207,7 +189,7 @@ function BrandPanel() {
           <div key={num} style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span
               style={{
-                fontFamily: "'Space Grotesk', sans-serif",
+                fontFamily: "'DM Serif Display', serif",
                 fontSize: 18,
                 fontWeight: 800,
                 color: "rgba(255,255,255,0.3)",
@@ -233,7 +215,6 @@ function RegisterForm() {
   const { register, user } = useAuth();
   const { message } = App.useApp();
 
-  if (user) return <Navigate to="/discover" replace />;
 
   const onFinish = async (values) => {
     if (values.password !== values.confirmPassword) {
@@ -245,12 +226,10 @@ function RegisterForm() {
       await register(
         values.name,
         values.email,
-        values.password,
-        values.sport,
-        values.skill_level
+        values.password
       );
       message.success("Account created — welcome to Sinder!");
-      navigate("/discover");
+      navigate('/onboarding');
     } catch (err) {
       const serverError = err?.response?.data?.error;
       const msg = serverError || "Registration failed. Please try again.";
@@ -300,8 +279,8 @@ function RegisterForm() {
                       level={3}
                       style={{
                         margin: 0,
-                        color: "#fff",
-                        fontFamily: "'Space Grotesk', sans-serif",
+                        color: TEXT_MAIN,
+                        fontFamily: "'DM Serif Display', serif",
                         fontWeight: 800,
                         letterSpacing: -0.5,
                         textAlign: "center",
@@ -311,7 +290,7 @@ function RegisterForm() {
                     </Title>
                     <Text
                       style={{
-                        color: "rgba(255,255,255,0.45)",
+                        color: TEXT_MUTED,
                         fontSize: 13,
                         textAlign: "center",
                         display: "block",
@@ -332,7 +311,7 @@ function RegisterForm() {
                       rules={rules.name}
                     >
                       <Input
-                        prefix={<UserOutlined style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        prefix={<UserOutlined style={{ color: TEXT_MUTED }} />}
                         placeholder="Jamie Davies"
                         size="large"
                         style={inputStyle}
@@ -345,7 +324,7 @@ function RegisterForm() {
                       rules={rules.email}
                     >
                       <Input
-                        prefix={<MailOutlined style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        prefix={<MailOutlined style={{ color: TEXT_MUTED }} />}
                         placeholder="you@example.com"
                         size="large"
                         style={inputStyle}
@@ -359,7 +338,7 @@ function RegisterForm() {
                       hasFeedback
                     >
                       <Input.Password
-                        prefix={<LockOutlined style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        prefix={<LockOutlined style={{ color: TEXT_MUTED }} />}
                         placeholder="Min. 8 characters"
                         size="large"
                         style={inputStyle}
@@ -378,7 +357,7 @@ function RegisterForm() {
                       rules={rules.confirmPassword}
                     >
                       <Input.Password
-                        prefix={<CheckCircleOutlined style={{ color: "rgba(255,255,255,0.3)" }} />}
+                        prefix={<CheckCircleOutlined style={{ color: TEXT_MUTED }} />}
                         placeholder="Repeat your password"
                         size="large"
                         style={inputStyle}
@@ -388,37 +367,6 @@ function RegisterForm() {
                         }}
                       />
                     </Form.Item>
-
-                    <Row gutter={12}>
-                      <Col span={14}>
-                        <Form.Item
-                          label={<span style={labelStyle}>Primary sport</span>}
-                          name="sport"
-                          rules={rules.sport}
-                        >
-                          <Select
-                            placeholder="Pick a sport"
-                            size="large"
-                            options={SPORTS}
-                            style={{ borderRadius: 10 }}
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col span={10}>
-                        <Form.Item
-                          label={<span style={labelStyle}>Skill level</span>}
-                          name="skill_level"
-                          rules={rules.skill_level}
-                        >
-                          <Select
-                            placeholder="Level"
-                            size="large"
-                            options={SKILLS}
-                            style={{ borderRadius: 10 }}
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
 
                     <Form.Item style={{ marginBottom: 12, marginTop: 4 }}>
                       <Button
@@ -436,7 +384,7 @@ function RegisterForm() {
                   </Form>
 
                   <div style={{ textAlign: "center", marginTop: 8 }}>
-                    <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
+                    <Text style={{ color: TEXT_MUTED, fontSize: 13 }}>
                       Already have an account?{" "}
                       <a href="/login" style={{ color: BRAND, fontWeight: 600 }}>
                         Sign in

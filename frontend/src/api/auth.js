@@ -17,11 +17,11 @@ export const login = async (email, password) => {
   return throwIfError(res)
 }
 
-export const register = async (name, email, password, sport, skill_level) => {
+export const register = async (name, email, password) => {
   const res = await fetch('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, password, sport, skill_level }),
+    body: JSON.stringify({ name, email, password }),
   })
   return throwIfError(res)
 }

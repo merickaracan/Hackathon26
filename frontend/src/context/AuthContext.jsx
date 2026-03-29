@@ -38,8 +38,8 @@ export function AuthProvider({ children }) {
     setUser(decodeToken(data.token))
   }
 
-  const register = async (name, email, password, sport, skill_level) => {
-    const data = await apiRegister(name, email, password, sport, skill_level)
+  const register = async (name, email, password) => {
+    const data = await apiRegister(name, email, password)
     localStorage.setItem('token', data.token)
     setUser(decodeToken(data.token))
   }

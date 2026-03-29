@@ -8,6 +8,7 @@ const postRoutes    = require('./routes/posts')
 const requestRoutes = require('./routes/requests')
 const matchRoutes   = require('./routes/matches')
 const userRoutes    = require('./routes/users')
+const ratingRoutes  = require('./routes/ratings')
 
 const app  = express()
 const PORT = process.env.PORT || 3000
@@ -21,6 +22,7 @@ app.use('/api/posts',   postRoutes)
 app.use('/api/requests', requestRoutes)
 app.use('/api/matches', matchRoutes)
 app.use('/api/users',   userRoutes)
+app.use('/api/ratings', ratingRoutes)
 
 app.get('/health', (_, res) => res.json({ status: 'ok' }))
 

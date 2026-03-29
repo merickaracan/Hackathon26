@@ -5,7 +5,6 @@ import { getMyPosts, updateScore } from '../api/posts'
 import { updateNotifications } from '../api/users'
 import EditProfileModal from '../components/EditProfileModal'
 
-const skillPercent = { beginner: 33, intermediate: 66, advanced: 100 }
 
 const sportEmoji = {
   tennis: '🎾', padel: '🏓', football: '⚽', basketball: '🏀',
@@ -228,15 +227,6 @@ export default function Profile() {
                         {s.skill}
                       </span>
                     </div>
-                    <div className="h-1.5 bg-border rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-gold to-gold/70 rounded-full transition-all duration-500"
-                        style={{ width: `${skillPercent[s.skill] || 33}%` }}
-                      />
-                    </div>
-                    <p className="text-[10px] text-text-muted font-body mt-1">
-                      {skillPercent[s.skill] || 33}% proficiency
-                    </p>
                   </div>
                 ))}
               </div>

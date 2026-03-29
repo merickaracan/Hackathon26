@@ -8,10 +8,12 @@ import { getMe } from "./api/users";
 // Pages
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Onboarding from "./pages/Onboarding";
 import Discover from "./pages/Discover";
 import Posts from "./pages/Posts";
 import PostSession from "./pages/PostSession";
 import Matches from "./pages/Matches";
+import RateSession from "./pages/RateSession";
 import Profile from "./pages/Profile";
 
 // Components
@@ -26,6 +28,14 @@ function ProtectedLayout() {
       <Outlet />
     </Layout>
   );
+}
+
+// Bare protected route — auth required but no Layout wrapper
+function ProtectedRoute() {
+  const { user } = useAuth();
+  const token = localStorage.getItem('token');
+  if (!user && !token) return <Navigate to="/login" replace />;
+  return <Outlet />;
 }
 
 function AppContent() {
@@ -74,9 +84,11 @@ function AppContent() {
   return (
     <ConfigProvider
       theme={{
-        algorithm: theme.darkAlgorithm,
+        algorithm: theme.defaultAlgorithm,
         token: {
-          colorPrimary: "#E8462A",
+          colorPrimary: "#C4856A",
+          colorBgBase: "#F5F0E8",
+          colorTextBase: "#2C2420",
           borderRadius: 10,
           fontFamily: "'DM Sans', sans-serif",
         },
@@ -88,6 +100,11 @@ function AppContent() {
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
 
+          {/* Protected — no sidebar layout */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/onboarding" element={<Onboarding />} />
+          </Route>
+
           {/* Root redirect */}
           <Route path="/" element={<Navigate to={user ? "/discover" : "/login"} replace />} />
 
@@ -98,6 +115,7 @@ function AppContent() {
             <Route path="/post-session" element={<PostSession />} />
             <Route path="/requests"     element={<Matches />} />
             <Route path="/matches"      element={<Navigate to="/requests" replace />} />
+            <Route path="/rate-session" element={<RateSession />} />
             <Route path="/profile"      element={<Profile />} />
           </Route>
 

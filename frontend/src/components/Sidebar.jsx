@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext'
 const navItems = [
   { to: '/discover',     label: 'Discover' },
   { to: '/posts',        label: 'Sessions' },
+  { to: '/matches',      label: 'Connections', badge: true },
+  { to: '/rate-session', label: 'Rate session', highlight: true },
   { to: '/requests',     label: 'Requests', badge: true },
   { to: '/post-session', label: 'Create session', highlight: true },
   { to: '/profile',      label: 'Profile' },
@@ -25,9 +27,8 @@ export default function Sidebar({ matchCount = 0 }) {
       {/* Desktop */}
       <aside className="hidden md:flex flex-col w-60 min-h-screen bg-brand-dark fixed left-0 top-0 z-30">
         <div className="px-7 py-8 border-b border-white/5">
-          <span className="font-display text-3xl font-bold tracking-tight">
-            <span className="text-brand">Sin</span>
-            <span className="text-white">der</span>
+          <span className="font-display text-3xl font-bold tracking-tight text-white">
+            Sinder
           </span>
           <p className="text-[10px] tracking-widest uppercase text-white/30 mt-1 font-body">Where campus meets court</p>
         </div>
